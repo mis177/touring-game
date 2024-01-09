@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:touring_game/services/auth/auth_exceptions.dart';
-import 'package:touring_game/services/auth/bloc/auth_bloc.dart';
-import 'package:touring_game/services/auth/bloc/auth_event.dart';
-import 'package:touring_game/services/auth/bloc/auth_state.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 
 class ForgotPasswordView extends StatefulWidget {
@@ -43,43 +43,54 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   title: 'Error',
                   text: 'We could not proceed');
             }
-          } else {
+          } else if (state.emailSent == true) {
             _controller.clear();
             await showCustomDialog(
                 context: context,
                 title: 'Success',
-                text: 'Email was sent to your email');
+                text: 'Email was sent successfully');
           }
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Forgot password'),
-        ),
+        backgroundColor: Colors.amber,
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Enter email and click'),
+              const Text(
+                'Enter email and click password reset',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 25),
               TextField(
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
                 autofocus: true,
                 controller: _controller,
                 decoration: const InputDecoration(
-                  hintText: 'Your email adress',
+                  labelText: 'Your email adress',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
                 ),
               ),
-              TextButton(
+              const SizedBox(height: 25),
+              FilledButton(
                 onPressed: () {
                   final email = _controller.text;
                   context
                       .read<AuthBloc>()
                       .add(AuthEventForgotPassword(email: email));
                 },
-                child: const Text('Send me password reset link'),
+                child: const Text('Reset password'),
               ),
-              TextButton(
+              const SizedBox(height: 15),
+              OutlinedButton(
                 onPressed: () {
                   context.read<AuthBloc>().add(
                         const AuthEventLogOut(),

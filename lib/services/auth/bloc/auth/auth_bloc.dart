@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:touring_game/services/auth/auth_provider.dart';
-import 'package:touring_game/services/auth/bloc/auth_event.dart';
-import 'package:touring_game/services/auth/bloc/auth_state.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(AuthProvider provider)
@@ -12,7 +12,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = provider.currentUser;
       if (user == null) {
         emit(
-          const AuthStateLoggingIn(),
+          const AuthStateFirstTimeOpened(),
         );
       } else if (!user.isEmailVerified) {
         emit(const AuthStateNeedsVerification());
@@ -110,15 +110,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         isLoading: true,
       ));
       Exception? exception;
+      bool emailSent;
       try {
         await provider.sendPasswordReset(toEmail: email);
         exception = null;
+        emailSent = true;
       } on Exception catch (e) {
         exception = e;
+        emailSent = false;
       }
-
       emit(AuthStateForgotPassword(
         exception: exception,
+        emailSent: emailSent,
       ));
     });
     //send email verification

@@ -16,6 +16,11 @@ class AuthStateUninitialized extends AuthState {
       : super(isLoading: isLoading);
 }
 
+class AuthStateFirstTimeOpened extends AuthState {
+  const AuthStateFirstTimeOpened({bool isLoading = false})
+      : super(isLoading: isLoading);
+}
+
 class AuthStateRegistering extends AuthState {
   final Exception? exception;
 
@@ -53,9 +58,11 @@ class AuthStateNeedsVerification extends AuthState {
 }
 
 class AuthStateForgotPassword extends AuthState {
+  final bool emailSent;
   final Exception? exception;
   const AuthStateForgotPassword({
     this.exception,
+    this.emailSent = false,
     bool isLoading = false,
   }) : super(isLoading: isLoading);
 }

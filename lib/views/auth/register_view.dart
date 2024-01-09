@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:touring_game/services/auth/auth_exceptions.dart';
-import 'package:touring_game/services/auth/bloc/auth_bloc.dart';
-import 'package:touring_game/services/auth/bloc/auth_event.dart';
-import 'package:touring_game/services/auth/bloc/auth_state.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
+import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 
@@ -17,6 +17,8 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+  bool obscureText = true;
+  IconData visibilityIcon = Icons.visibility;
 
   @override
   void initState() {
@@ -61,56 +63,115 @@ class _RegisterViewState extends State<RegisterView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Register')),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Create your account'),
-              TextField(
-                controller: _email,
-                enableSuggestions: false,
-                autocorrect: false,
-                autofocus: true,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(hintText: 'Enter your email'),
-              ),
-              TextField(
-                controller: _password,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration:
-                    const InputDecoration(hintText: 'Enter your password'),
-              ),
-              Center(
-                child: Column(
-                  children: [
-                    TextButton(
-                      onPressed: () async {
-                        final email = _email.text;
-                        final password = _password.text;
-                        context.read<AuthBloc>().add(
-                              AuthEventRegister(
-                                email,
-                                password,
-                              ),
-                            );
-                      },
-                      child: const Text('Register'),
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          context
-                              .read<AuthBloc>()
-                              .add(const AuthEventShouldLogIn());
-                        },
-                        child: const Text('Already registered? Log in'))
-                  ],
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.amber,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 120),
+                  child: Image.asset('lib/images/app_icon.png'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 25),
+                const Text(
+                  'Touring app',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 30,
+                    //  color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 50),
+                const Text(
+                  'Create your account',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                TextField(
+                  controller: _email,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.email),
+                    alignLabelWithHint: true,
+                    labelText: 'Enter your email',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _password,
+                  obscureText: obscureText,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(visibilityIcon),
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                          if (obscureText) {
+                            visibilityIcon = Icons.visibility;
+                          } else {
+                            visibilityIcon = Icons.visibility_off;
+                          }
+                        });
+                      },
+                    ),
+                    alignLabelWithHint: true,
+                    labelText: 'Enter your password',
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                FilledButton(
+                  onPressed: () async {
+                    final email = _email.text;
+                    final password = _password.text;
+                    context.read<AuthBloc>().add(
+                          AuthEventRegister(
+                            email,
+                            password,
+                          ),
+                        );
+                  },
+                  child: const Text(
+                    'Sign Up',
+                    style: TextStyle(fontSize: 36),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                TextButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(const AuthEventShouldLogIn());
+                  },
+                  child: Text.rich(
+                    TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Already registered? ',
+                        ),
+                        TextSpan(
+                          text: ' Log in',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).indicatorColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
