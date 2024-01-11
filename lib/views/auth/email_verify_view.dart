@@ -21,6 +21,11 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 120),
+              child: Image.asset('lib/images/app_icon.png'),
+            ),
+            const SizedBox(height: 25),
             const Text(
               "We've sent you an email veryfication. Please open it to verify your account",
               textAlign: TextAlign.center,

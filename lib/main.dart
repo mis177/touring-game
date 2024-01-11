@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:touring_game/services/auth/auth_service.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
-import 'package:touring_game/services/auth/firebase_auth_provider.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/utilities/routes.dart';
 import 'package:touring_game/views/auth/email_verify_view.dart';
 import 'package:touring_game/views/auth/login_view.dart';
 import 'package:touring_game/views/auth/password_forgot_view.dart';
 import 'package:touring_game/views/auth/register_view.dart';
 import 'package:touring_game/views/auth/start_view.dart';
+import 'package:touring_game/views/game/activities/activities_list_view.dart';
+import 'package:touring_game/views/game/activities/activity_detail_view.dart';
 import 'package:touring_game/views/game/menu_view.dart';
 
 void main() {
@@ -21,10 +24,13 @@ void main() {
         primarySwatch: Colors.blue,
       ),
       home: BlocProvider<AuthBloc>(
-        create: (context) => AuthBloc(FirebaseAuthProvider()),
+        create: (context) => AuthBloc(AuthService.firebase()),
         child: const HomePage(),
       ),
-      routes: const {},
+      routes: {
+        openActivitiesList: (context) => const ActivitiesListBlocProvider(),
+        openActivitityDetails: (context) => const ActivityDetailsBlocProvider(),
+      },
       debugShowCheckedModeBanner: false,
     ),
   );
@@ -48,7 +54,7 @@ class HomePage extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return const MenuView();
+          return const AppMenuView();
         } else if (state is AuthStateNeedsVerification) {
           return const VerifyEmailView();
         } else if (state is AuthStateLoggingIn) {

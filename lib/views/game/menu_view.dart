@@ -1,34 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:touring_game/models/place.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
+import 'package:touring_game/services/game/bloc/game_bloc.dart';
+import 'package:touring_game/services/game/bloc/game_event.dart';
+import 'package:touring_game/services/game/game_provider.dart';
+import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/dialogs/logout_dialog.dart';
 import 'package:touring_game/utilities/menu_actions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:touring_game/views/game/game_list_view.dart';
+import 'package:touring_game/views/game/activities/activities_map.dart';
+import 'package:touring_game/views/game/places/places_list_view.dart';
+
+class AppMenuView extends StatelessWidget {
+  const AppMenuView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => GameBloc(
+          FirebaseCloudGameService(provider: FirebaseCloudGameProvider())),
+      child: const MenuView(),
+    );
+  }
+}
 
 class MenuView extends StatefulWidget {
   const MenuView({super.key});
 
   @override
-  State<MenuView> createState() => _FirstScreemState();
+  State<MenuView> createState() => _MenuView();
 }
 
-class _FirstScreemState extends State<MenuView> {
+class _MenuView extends State<MenuView> {
   int _selectedIndex = 0;
+  String _scaffoldText = 'Places list';
+  late final List<DatabasePlace> places;
+  bool placesLoaded = false;
 
-  void _onItemTapped(int index) {
+  void _onMenuItemTapped(int index) {
+    switch (index) {
+      case 0:
+        _scaffoldText = 'Places list';
+      case 1:
+        _scaffoldText = 'Places map';
+    }
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  Widget scaffoldBody() {
+  Widget bottomNavigationWidgets() {
     switch (_selectedIndex) {
       case 0:
-        return PlacesList();
-        break;
+        return const PlacesList();
+      case 1:
+        return const ActivitiesMapProvider();
       default:
-        return Text('a');
+        return Text('b');
       //  case 1:
       // // return mapa
       //  break;
@@ -40,8 +69,18 @@ class _FirstScreemState extends State<MenuView> {
 
   @override
   Widget build(BuildContext context) {
+    context.read<GameBloc>().add(
+          GameEventLoadPlaces(),
+        );
+
+    placesLoaded = true;
     return Scaffold(
         appBar: AppBar(
+          title: Center(
+              child: Text(
+            _scaffoldText,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          )),
           actions: [
             PopupMenuButton<MenuAction>(
               onSelected: (value) async {
@@ -91,8 +130,8 @@ class _FirstScreemState extends State<MenuView> {
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.amber[800],
-          onTap: _onItemTapped,
+          onTap: _onMenuItemTapped,
         ),
-        body: scaffoldBody());
+        body: bottomNavigationWidgets());
   }
 }

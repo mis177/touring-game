@@ -59,6 +59,11 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 120),
+                child: Image.asset('lib/images/app_icon.png'),
+              ),
+              const SizedBox(height: 25),
               const Text(
                 'Enter email and click password reset',
                 textAlign: TextAlign.center,

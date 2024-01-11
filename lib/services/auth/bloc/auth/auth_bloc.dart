@@ -1,15 +1,15 @@
 import 'package:bloc/bloc.dart';
-import 'package:touring_game/services/auth/auth_provider.dart';
+import 'package:touring_game/services/auth/auth_service.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(AuthProvider provider)
+  AuthBloc(AuthService service)
       : super(const AuthStateUninitialized(isLoading: true)) {
     // initialize
     on<AuthEventInitialize>((event, emit) async {
-      await provider.initialize();
-      final user = provider.currentUser;
+      await service.initialize();
+      final user = service.currentUser;
       if (user == null) {
         emit(
           const AuthStateFirstTimeOpened(),
@@ -40,11 +40,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthStateRegistering(
           isLoading: true, loadingText: 'Creating account'));
       try {
-        await provider.createUser(
+        await service.createUser(
           email: email,
           password: password,
         );
-        await provider.sendEmailVeryfication();
+        await service.sendEmailVeryfication();
         emit(const AuthStateNeedsVerification());
       } on Exception catch (e) {
         emit(AuthStateRegistering(
@@ -61,13 +61,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final email = event.email;
       final password = event.password;
       try {
-        final user = await provider.logIn(
+        final user = await service.logIn(
           email: email,
           password: password,
         );
 
         if (!user.isEmailVerified) {
-          await provider.sendEmailVeryfication();
+          await service.sendEmailVeryfication();
           emit(const AuthStateNeedsVerification());
         } else {
           emit(AuthStateLoggedIn(
@@ -85,7 +85,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // log out
     on<AuthEventLogOut>((event, emit) async {
       try {
-        await provider.logOut();
+        await service.logOut();
         emit(
           const AuthStateLoggingIn(),
         );
@@ -112,7 +112,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       Exception? exception;
       bool emailSent;
       try {
-        await provider.sendPasswordReset(toEmail: email);
+        await service.sendPasswordReset(toEmail: email);
         exception = null;
         emailSent = true;
       } on Exception catch (e) {
@@ -126,7 +126,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
     //send email verification
     on<AuthEventSendEmailVerification>((event, emit) async {
-      await provider.sendEmailVeryfication();
+      await service.sendEmailVeryfication();
       emit(const AuthStateNeedsVerification());
     });
   }
