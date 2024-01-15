@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285934909074",
+    "project_id": "touring-game",
+    "storage_bucket": "touring-game.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285934909074:android:a9c2dd3d021c94fec5184b",
+        "android_client_info": {
+          "package_name": "com.example.touring_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeZSiM6YEJck2txCA_NKZEEsRIkKSt3uo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

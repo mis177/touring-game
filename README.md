@@ -1,1 +1,3 @@
-# touring-game
+# touring_game
+
+A new Flutter project.
