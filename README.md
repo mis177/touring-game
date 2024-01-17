@@ -30,5 +30,6 @@ Profile tab, some minor UI changes, add splash screen and app icon. Add credits 
 # Credits:
 flutter_map  https://pub.dev/packages/flutter_map
 flutter_map_location_marker  https://pub.dev/packages/flutter_map_location_marker
+location search API https://nominatim.org/release-docs/latest/api/Search/
 url_launcher https://pub.dev/packages/url_launcher/license
 http https://pub.dev/packages/http
