@@ -208,12 +208,10 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                       var randomMarker =
                           mapMarkers[Random().nextInt(mapMarkers.length)];
 
-                      if (state.currentLocation != null) {
-                        mapController.move(
-                            lat_lng.LatLng(randomMarker.point.latitude,
-                                randomMarker.point.longitude),
-                            18);
-                      }
+                      mapController.move(
+                          lat_lng.LatLng(randomMarker.point.latitude,
+                              randomMarker.point.longitude),
+                          18);
 
                       var markerButton = randomMarker.child as IconButton;
                       markerButton.onPressed!();
@@ -240,7 +238,7 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
             ),
           );
         }
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: Text(''));
       },
     );
   }

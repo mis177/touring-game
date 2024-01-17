@@ -67,7 +67,7 @@ class HomePage extends StatelessWidget {
           return const WelcomeView();
         } else {
           return const Scaffold(
-            body: CircularProgressIndicator(),
+            body: Text(''),
           );
         }
       },

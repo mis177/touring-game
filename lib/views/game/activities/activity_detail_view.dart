@@ -52,47 +52,50 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
             context.read<GameBloc>().add(
                   GameEventLoadActivityDetails(activity: activity),
                 );
-            return const CircularProgressIndicator();
+            return const Text('');
           } else if (state is GameStateLoadedActivityDetails) {
             return Scaffold(
-              appBar: AppBar(),
+              appBar: AppBar(
+                title: Text(
+                  activity.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               body: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Checkbox(
-                            value: isDone,
-                            onChanged: (bool? value) {
-                              activity.isDone = value!;
-                              isDone = !isDone;
+                      Card(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Checkbox(
+                              value: isDone,
+                              onChanged: (bool? value) {
+                                activity.isDone = value!;
+                                isDone = !isDone;
 
-                              context.read<GameBloc>().add(
-                                    GameEventActivityDone(
-                                        activity: activity,
-                                        activityImage: state.activityImage),
-                                  );
+                                context.read<GameBloc>().add(
+                                      GameEventActivityDone(
+                                          activity: activity,
+                                          activityImage: state.activityImage),
+                                    );
 
-                              setState(() {});
-                            },
-                          ),
-                          Text(
-                            activity.name,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const Text('0/2'),
-                        ],
-                      ),
-                      Text(
-                        activity.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
+                                setState(() {});
+                              },
+                            ),
+                            Text(
+                              activity.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Text('0/2'),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 15),
                       Card(
@@ -100,9 +103,12 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                         child: state.activityImage,
                       ),
                       const SizedBox(height: 15),
-                      Text(
-                        activity.description,
-                        textAlign: TextAlign.justify,
+                      Container(
+                        color: Colors.amber[50],
+                        child: Text(
+                          activity.description,
+                          textAlign: TextAlign.justify,
+                        ),
                       )
                     ],
                   ),
@@ -114,7 +120,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
               ),
             );
           } else {
-            return const CircularProgressIndicator();
+            return const Text('');
           }
         },
       ),

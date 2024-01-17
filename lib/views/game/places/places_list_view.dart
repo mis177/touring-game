@@ -86,7 +86,7 @@ class _PlacesListState extends State<PlacesList> {
             ),
           );
         } else {
-          return const CircularProgressIndicator();
+          return const Text('');
         }
       },
     );

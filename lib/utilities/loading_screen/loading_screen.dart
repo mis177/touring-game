@@ -36,10 +36,10 @@ class LoadingScreen {
     final state = Overlay.of(context);
     final size = MediaQuery.of(context).size;
     final overlay = OverlayEntry(
-      opaque: true,
+      //opaque: true,
       builder: (context) {
         return Material(
-          color: Colors.amber,
+          color: Colors.grey.withAlpha(150),
           child: Center(
             child: Container(
               constraints: BoxConstraints(
@@ -48,7 +48,7 @@ class LoadingScreen {
                 minWidth: size.width * 0.5,
               ),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 240, 239, 188),
+                color: Colors.blueGrey[100]!.withAlpha(250),
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Padding(
