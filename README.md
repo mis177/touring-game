@@ -1,5 +1,5 @@
 # Touring Game
-Tourist game consisting of visiting specific places (based on map or location names). Every activity has its description, location and image. User creates account by email and stores its results in Firebase Database. On Map View user can random activity. Authentication implemented with Firebase.
+Tourist game - visiting specific places or doing activities (based on map or location names). Every activity has its description, location and image. User creates account by email and stores its results in Firebase Database. On Map View user can random activity. Authentication implemented with Firebase.
 
 # Screens
 
