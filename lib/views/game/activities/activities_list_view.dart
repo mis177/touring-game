@@ -31,6 +31,11 @@ class ActivitiesList extends StatefulWidget {
 
 class _ActivitiesListState extends State<ActivitiesList> {
   List<DatabaseActivity> filteredActivities = [];
+
+  void reloadList() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final activities =
@@ -77,22 +82,32 @@ class _ActivitiesListState extends State<ActivitiesList> {
                   Expanded(
                     child: ListView.builder(
                         itemCount: filteredActivities.length,
-                        itemBuilder: (ctx, index) => Card(
-                                child: ListTile(
-                              leading: const Icon(Icons.attractions),
-                              title: Text(
-                                filteredActivities[index].name,
-                                maxLines: 1,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(
-                                  openActivitityDetails,
-                                  arguments: filteredActivities[index],
-                                );
-                              },
-                            ))),
+                        itemBuilder: (ctx, index) {
+                          Color activityColor = Colors.black;
+                          if (filteredActivities[index].isDone) {
+                            activityColor = Colors.green;
+                          }
+                          return Card(
+                              shadowColor: activityColor,
+                              child: ListTile(
+                                leading: const Icon(Icons.attractions),
+                                title: Text(
+                                  style: TextStyle(color: activityColor),
+                                  filteredActivities[index].name,
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                      openActivitityDetails,
+                                      arguments: [
+                                        filteredActivities[index],
+                                        reloadList
+                                      ]);
+                                },
+                              ));
+                        }),
                   ),
                 ],
               ),

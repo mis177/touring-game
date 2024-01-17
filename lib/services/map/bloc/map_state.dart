@@ -69,3 +69,19 @@ class MapStateAddressSearchEnded extends MapState {
   @override
   List<Object?> get props => [repo];
 }
+
+class MapStateGettingUserLocation extends MapState {
+  const MapStateGettingUserLocation();
+}
+
+class MapStateLoadingMarkers extends MapState {
+  final List<DatabaseActivity> activities;
+  const MapStateLoadingMarkers({
+    required this.activities,
+    bool isLoading = false,
+    String? loadingText,
+  }) : super(
+          isLoading: isLoading,
+          loadingText: loadingText,
+        );
+}

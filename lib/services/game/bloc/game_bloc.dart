@@ -66,7 +66,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     on<GameEventActivityDone>((event, emit) {
       try {
-        service.activityDone(event.activity);
+        service.activityDoneChanged(event.activity);
       } on Exception catch (e) {
         emit(GameStateLoadingActivityDetails(
           exception: e,

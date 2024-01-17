@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/place.dart';
 import 'package:touring_game/services/game/game_provider.dart';
 
 class FirebaseCloudGameService {
-  final FirebaseCloudGameProvider provider;
-  FirebaseCloudGameService({required this.provider});
+  late FirebaseCloudGameProvider provider;
   List<DatabasePlace> places = [];
   List<DatabaseActivity> allActivities = [];
-  List<Marker> allMarkers = [];
+
+  static final FirebaseCloudGameService _shared =
+      FirebaseCloudGameService._sharedInstance();
+  FirebaseCloudGameService._sharedInstance();
+  factory FirebaseCloudGameService(
+      {required FirebaseCloudGameProvider provider}) {
+    _shared.provider = provider;
+    return _shared;
+  }
 
   Future<List<DatabasePlace>> allPlaces() async {
     List<DatabasePlace> placesList = [];
@@ -35,8 +41,8 @@ class FirebaseCloudGameService {
     return test;
   }
 
-  void activityDone(DatabaseActivity activity) {
-    return provider.activityDone(activity);
+  void activityDoneChanged(DatabaseActivity activity) {
+    return provider.activityDoneChanged(activity);
   }
 
   Future<List<DatabaseActivity>> getAllActivities(
@@ -46,6 +52,7 @@ class FirebaseCloudGameService {
       activities += await getPlaceActivities(placeId: place.id);
     }
     allActivities = activities;
+
     return activities;
   }
 }

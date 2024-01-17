@@ -16,6 +16,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<MapEventLoadMap>((event, emit) async {
       List<DatabasePlace> placesList = [];
       List<DatabaseActivity> activitiesList = [];
+
       emit(const MapStateLoadingMap(
           isLoading: true, loadingText: 'Loading map'));
       if (service.places.isEmpty) {
@@ -37,21 +38,26 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         ));
       }
 
-      final Position? currentLocation = await getUserLocation();
-
+      activitiesList = service.allActivities;
+      emit(MapStateLoadingMarkers(
+          activities: activitiesList,
+          isLoading: true,
+          loadingText: 'Loading map'));
+      Position? currentPosition = await getUserLocation();
       emit(MapStateLoadedMap(
         activities: activitiesList,
-        currentLocation: currentLocation,
+        currentLocation: currentPosition,
         searchResults: const [],
       ));
     });
 
     on<MapEventGetUserLocation>((event, emit) async {
-      Position? userLocation = await getUserLocation();
+      Position? currentPosition = await getUserLocation();
 
+      emit(const MapStateGettingUserLocation());
       emit(MapStateLoadedMap(
         activities: service.allActivities,
-        currentLocation: userLocation,
+        currentLocation: currentPosition,
         searchResults: const [],
       ));
     });
@@ -67,7 +73,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       }
 
       emit(MapStateAddressSearchEnded(repo: addresses));
-
       emit(MapStateLoadedMap(
         activities: service.allActivities,
         currentLocation: null,

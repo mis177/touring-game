@@ -56,7 +56,7 @@ class FirebaseCloudGameProvider {
     return activitiesList;
   }
 
-  void activityDone(DatabaseActivity activity) async {
+  void activityDoneChanged(DatabaseActivity activity) async {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)

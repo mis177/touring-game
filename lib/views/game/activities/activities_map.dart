@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -38,11 +40,30 @@ class ActivitiesMap extends StatefulWidget {
 class _ActivitiesMapState extends State<ActivitiesMap> {
   MapController mapController = MapController();
   List<AddressModel> searchResults = [];
+  List<Marker> mapMarkers = [];
+  CurrentLocationLayer locationLayer = CurrentLocationLayer();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<MapBloc, MapState>(
       listener: (context, state) {
+        if (state is MapStateLoadingMarkers) {
+          void reloadMarkers() {
+            setState(() {
+              mapMarkers = getMarkers(
+                activities: state.activities,
+                context: context,
+                reloadMarkers: reloadMarkers,
+              );
+            });
+          }
+
+          mapMarkers = getMarkers(
+            activities: state.activities,
+            context: context,
+            reloadMarkers: reloadMarkers,
+          );
+        }
         if (state is MapStateAddressSearchEnded) {
           searchResults = state.repo;
         }
@@ -94,19 +115,17 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                           ),
                         ],
                       ),
-                      MarkerLayer(
-                        markers: getMarkers(
-                          activities: state.activities,
-                          context: context,
-                        ),
-                      ),
-                      CurrentLocationLayer(),
+                      MarkerLayer(markers: mapMarkers),
+                      locationLayer,
                     ]),
                 Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Column(
                     children: [
                       TextField(
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
                         decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
@@ -123,10 +142,13 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                       ),
                       SingleChildScrollView(
                         child: TapRegion(
+                          behavior: HitTestBehavior.opaque,
                           onTapOutside: (event) {
-                            setState(() {
-                              searchResults = [];
-                            });
+                            if (searchResults.isNotEmpty) {
+                              setState(() {
+                                searchResults = [];
+                              });
+                            }
                           },
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
@@ -176,26 +198,49 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
               ],
             ),
             floatingActionButton: Padding(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: IconButton(
-                iconSize: 40,
-                onPressed: () async {
-                  context.read<MapBloc>().add(
-                        const MapEventGetUserLocation(),
-                      );
-                  if (state.currentLocation != null) {
-                    mapController.move(
-                        lat_lng.LatLng(state.currentLocation!.latitude,
-                            state.currentLocation!.longitude),
-                        18);
-                  }
-                },
-                icon: const Icon(Icons.my_location_rounded),
+              padding: const EdgeInsets.only(bottom: 70),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    iconSize: 40,
+                    onPressed: () async {
+                      var randomMarker =
+                          mapMarkers[Random().nextInt(mapMarkers.length)];
+
+                      if (state.currentLocation != null) {
+                        mapController.move(
+                            lat_lng.LatLng(randomMarker.point.latitude,
+                                randomMarker.point.longitude),
+                            18);
+                      }
+
+                      var markerButton = randomMarker.child as IconButton;
+                      markerButton.onPressed!();
+                    },
+                    icon: const Icon(Icons.casino),
+                  ),
+                  IconButton(
+                    iconSize: 40,
+                    onPressed: () async {
+                      context.read<MapBloc>().add(
+                            const MapEventGetUserLocation(),
+                          );
+                      if (state.currentLocation != null) {
+                        mapController.move(
+                            lat_lng.LatLng(state.currentLocation!.latitude,
+                                state.currentLocation!.longitude),
+                            18);
+                      }
+                    },
+                    icon: const Icon(Icons.my_location_rounded),
+                  ),
+                ],
               ),
             ),
           );
         }
-        return const CircularProgressIndicator();
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
