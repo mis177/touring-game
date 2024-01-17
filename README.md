@@ -33,3 +33,4 @@ flutter_map_location_marker  https://pub.dev/packages/flutter_map_location_marke
 location search API https://nominatim.org/release-docs/latest/api/Search/
 url_launcher https://pub.dev/packages/url_launcher/license
 http https://pub.dev/packages/http
+logo https://www.flaticon.com/free-icon/traveller_3284582
