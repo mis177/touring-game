@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:touring_game/services/auth/auth_service.dart';
+import 'package:touring_game/services/auth/auth_user.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 
@@ -18,7 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthStateNeedsVerification());
       } else {
         emit(AuthStateLoggedIn(
-          user: user,
+          userEmail: user.email,
         ));
       }
     });
@@ -71,7 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(const AuthStateNeedsVerification());
         } else {
           emit(AuthStateLoggedIn(
-            user: user,
+            userEmail: user.email,
           ));
         }
       } on Exception catch (e) {
@@ -112,7 +113,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       Exception? exception;
       bool emailSent;
       try {
-        await service.sendPasswordReset(toEmail: email);
+        await service.sendPasswordReset(toEmail: email, loggedIn: false);
         exception = null;
         emailSent = true;
       } on Exception catch (e) {
@@ -128,6 +129,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthEventSendEmailVerification>((event, emit) async {
       await service.sendEmailVeryfication();
       emit(const AuthStateNeedsVerification());
+    });
+
+    //send email change password
+    on<AuthEventChangePassword>((event, emit) async {
+      Exception? exception;
+
+      try {
+        await service.sendPasswordReset(toEmail: '', loggedIn: true);
+      } on Exception catch (e) {
+        exception = e;
+      }
+      AuthUser? currentUser = service.currentUser;
+
+      emit(AuthStateEmailSent(
+          exception: exception, userEmail: currentUser!.email));
+    });
+
+    on<AuthEventDeleteUser>((event, emit) async {
+      Exception? exception;
+      emit(const AuthStateUserDeleting(
+          isLoading: true, loadingText: 'Deleting account'));
+      try {
+        await service.deleteUser();
+        emit(const AuthStateUserDeleted());
+      } on Exception catch (e) {
+        exception = e;
+
+        emit(AuthStateUserDeletedError(exception: exception));
+      }
     });
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:touring_game/services/auth/auth_exceptions.dart';
 import 'package:touring_game/services/auth/auth_service.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
+import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 import 'package:touring_game/utilities/routes.dart';
 import 'package:touring_game/views/auth/email_verify_view.dart';
@@ -36,14 +38,28 @@ void main() {
   );
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  void showSnackBar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        duration: const Duration(milliseconds: 2000),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     context.read<AuthBloc>().add(const AuthEventInitialize());
     return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state.isLoading) {
           LoadingScreen().show(
               context: context,
@@ -51,17 +67,35 @@ class HomePage extends StatelessWidget {
         } else {
           LoadingScreen().hide();
         }
+
+        if (state is AuthStateUserDeletedError) {
+          if (state.exception != null) {
+            if (state.exception is RequiresRecentLoginAuthException) {
+              await showCustomDialog(
+                  context: context, title: 'Error', text: 'You need to relog');
+            } else {
+              await showCustomDialog(
+                  context: context,
+                  title: 'Error',
+                  text: 'We could not proceed');
+            }
+          }
+        } else if (state is AuthStateUserDeleted) {
+          showSnackBar('Account deleted');
+        }
       },
       builder: (context, state) {
-        if (state is AuthStateLoggedIn) {
+        if (state is AuthStateLoggedIn || state is AuthStateEmailSent) {
           return const AppMenuView();
         } else if (state is AuthStateNeedsVerification) {
           return const VerifyEmailView();
-        } else if (state is AuthStateLoggingIn) {
+        } else if (state is AuthStateLoggingIn ||
+            state is AuthStateUserDeletedError) {
           return const LoginView();
         } else if (state is AuthStateForgotPassword) {
           return const ForgotPasswordView();
-        } else if (state is AuthStateRegistering) {
+        } else if (state is AuthStateRegistering ||
+            state is AuthStateUserDeleted) {
           return const RegisterView();
         } else if (state is AuthStateFirstTimeOpened) {
           return const WelcomeView();

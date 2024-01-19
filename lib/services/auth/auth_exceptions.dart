@@ -11,6 +11,9 @@ class InvalidEmailAuthException implements Exception {}
 // forgot password exceptions
 class UserNotFound implements Exception {}
 
+//delete account exceptions
+class RequiresRecentLoginAuthException implements Exception {}
+
 // generic exceptions
 class GenericAuthException implements Exception {}
 

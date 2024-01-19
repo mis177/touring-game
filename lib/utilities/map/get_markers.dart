@@ -39,10 +39,12 @@ List<Marker> getMarkers(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(
-                          activity.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 25),
+                        Center(
+                          child: Text(
+                            activity.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 25),
+                          ),
                         ),
                         Text(activity.title),
                         ElevatedButton(
