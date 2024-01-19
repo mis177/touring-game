@@ -109,7 +109,8 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                           activity.description,
                           textAlign: TextAlign.justify,
                         ),
-                      )
+                      ),
+                      const SizedBox(height: 60),
                     ],
                   ),
                 ),

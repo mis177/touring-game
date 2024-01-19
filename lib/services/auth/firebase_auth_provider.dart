@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:touring_game/firebase_options.dart';
 
@@ -35,6 +36,38 @@ class FirebaseAuthProvider implements AuthProvider {
         throw GenericAuthException();
       }
     } catch (_) {
+      throw GenericAuthException();
+    }
+  }
+
+  @override
+  Future<void> deleteUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        String uid = user.uid;
+        FirebaseAuth.instance.currentUser!.uid;
+        await user.delete();
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('activities_done')
+            .get()
+            .then((snapshot) {
+          for (var doc in snapshot.docs) {
+            doc.reference.delete();
+          }
+        });
+
+        await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'requires-recent-login') {
+          await logOut();
+          throw RequiresRecentLoginAuthException();
+        }
+      }
+    } else {
       throw GenericAuthException();
     }
   }
@@ -106,8 +139,14 @@ class FirebaseAuthProvider implements AuthProvider {
   }
 
   @override
-  Future<void> sendPasswordReset({required String toEmail}) async {
+  Future<void> sendPasswordReset(
+      {required String toEmail, required bool? loggedIn}) async {
     try {
+      if (loggedIn != null) {
+        if (loggedIn) {
+          toEmail = FirebaseAuth.instance.currentUser!.email!;
+        }
+      }
       await FirebaseAuth.instance.sendPasswordResetEmail(email: toEmail);
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

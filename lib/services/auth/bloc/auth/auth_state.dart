@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart' show immutable;
-import 'package:touring_game/services/auth/auth_user.dart';
 
 @immutable
 sealed class AuthState {
   final bool isLoading;
   final String? loadingText;
+  final String? userMail;
   const AuthState({
+    this.userMail,
     this.isLoading = false,
     this.loadingText = 'Please wait a moment',
   });
@@ -47,9 +48,9 @@ class AuthStateLoggingIn extends AuthState {
 }
 
 class AuthStateLoggedIn extends AuthState {
-  final AuthUser user;
-  const AuthStateLoggedIn({required this.user, bool isLoading = false})
-      : super(isLoading: isLoading);
+  final String userEmail;
+  const AuthStateLoggedIn({required this.userEmail, bool isLoading = false})
+      : super(isLoading: isLoading, userMail: userEmail);
 }
 
 class AuthStateNeedsVerification extends AuthState {
@@ -65,4 +66,36 @@ class AuthStateForgotPassword extends AuthState {
     this.emailSent = false,
     bool isLoading = false,
   }) : super(isLoading: isLoading);
+}
+
+class AuthStateEmailSent extends AuthState {
+  final Exception? exception;
+  final String userEmail;
+  const AuthStateEmailSent({
+    required this.exception,
+    required this.userEmail,
+  }) : super(userMail: userEmail);
+}
+
+class AuthStateUserDeleting extends AuthState {
+  final Exception? exception;
+  const AuthStateUserDeleting({
+    bool isLoading = false,
+    this.exception,
+    String? loadingText,
+  }) : super(
+          isLoading: isLoading,
+          loadingText: loadingText,
+        );
+}
+
+class AuthStateUserDeletedError extends AuthState {
+  final Exception? exception;
+  const AuthStateUserDeletedError({
+    this.exception,
+  });
+}
+
+class AuthStateUserDeleted extends AuthState {
+  const AuthStateUserDeleted();
 }

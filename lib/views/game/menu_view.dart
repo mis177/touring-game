@@ -8,6 +8,7 @@ import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/dialogs/logout_dialog.dart';
 import 'package:touring_game/utilities/menu_actions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:touring_game/views/auth/profile_info_view.dart';
 import 'package:touring_game/views/game/activities/activities_map.dart';
 import 'package:touring_game/views/game/places/places_list_view.dart';
 
@@ -42,6 +43,8 @@ class _MenuView extends State<MenuView> {
         _scaffoldText = 'Places list';
       case 1:
         _scaffoldText = 'Activities map';
+      case 2:
+        _scaffoldText = 'Profile';
     }
     setState(() {
       _selectedIndex = index;
@@ -54,14 +57,10 @@ class _MenuView extends State<MenuView> {
         return const PlacesList();
       case 1:
         return const ActivitiesMapProvider();
+      case 2:
+        return const ProfileInfoView();
       default:
         return const Center(child: Text('TODO'));
-      //  case 1:
-      // // return mapa
-      //  break;
-      //  case 2:
-      // // return profil
-      //  break;
     }
   }
 
@@ -87,7 +86,7 @@ class _MenuView extends State<MenuView> {
                     final shouldLogout = await showLogoutDialog(
                         context: context,
                         title: 'Log Out',
-                        text: 'Are you sure ypou want to log out?');
+                        text: 'Are you sure you want to log out?');
                     if (shouldLogout!) {
                       // ignore: use_build_context_synchronously
                       context.read<AuthBloc>().add(
