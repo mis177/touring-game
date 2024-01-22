@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:touring_game/models/address.dart';
+import 'package:touring_game/models/marker.dart';
 import 'package:touring_game/services/game/game_provider.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:latlong2/latlong.dart' as lat_lng;
@@ -40,8 +41,10 @@ class ActivitiesMap extends StatefulWidget {
 class _ActivitiesMapState extends State<ActivitiesMap> {
   MapController mapController = MapController();
   List<AddressModel> searchResults = [];
-  List<Marker> mapMarkers = [];
+  List<MyMarker> mapMarkers = [];
   CurrentLocationLayer locationLayer = CurrentLocationLayer();
+  bool unfinishedActivitiesSort = false;
+  bool finishedActivitiesSort = false;
 
   @override
   Widget build(BuildContext context) {
@@ -141,55 +144,124 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                         },
                       ),
                       SingleChildScrollView(
-                        child: TapRegion(
-                          behavior: HitTestBehavior.opaque,
-                          onTapOutside: (event) {
-                            if (searchResults.isNotEmpty) {
-                              setState(() {
-                                searchResults = [];
-                              });
-                            }
-                          },
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: 0,
-                              maxHeight: MediaQuery.of(context).size.height / 3,
-                            ),
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: searchResults.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    mapController.move(
-                                        lat_lng.LatLng(
-                                            searchResults[index]
-                                                .coords
-                                                .latitude,
-                                            searchResults[index]
-                                                .coords
-                                                .longitude),
-                                        14);
-                                    searchResults = [];
-                                    setState(() {});
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border.all(
-                                          color: Colors.grey,
-                                        ),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(20))),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(searchResults[index].name),
-                                    ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ButtonStyle(backgroundColor:
+                                        MaterialStateProperty.resolveWith<
+                                                Color?>(
+                                            (Set<MaterialState> states) {
+                                      if (unfinishedActivitiesSort) {
+                                        return Colors.green[100];
+                                      } else {
+                                        return Colors.grey[400];
+                                      }
+                                    })),
+                                    onPressed: () {
+                                      unfinishedActivitiesSort =
+                                          !unfinishedActivitiesSort;
+                                      if (unfinishedActivitiesSort) {
+                                        finishedActivitiesSort = false;
+                                      }
+                                      context.read<MapBloc>().add(
+                                            MapEventSearchActivitiesFinished(
+                                                finished: false,
+                                                activities: state.activities,
+                                                value:
+                                                    unfinishedActivitiesSort),
+                                          );
+                                    },
+                                    child: const Text('Unfinished'),
                                   ),
-                                );
-                              },
+                                ),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ButtonStyle(backgroundColor:
+                                        MaterialStateProperty.resolveWith<
+                                                Color?>(
+                                            (Set<MaterialState> states) {
+                                      if (finishedActivitiesSort) {
+                                        return Colors.green[100];
+                                      } else {
+                                        return Colors.grey[400];
+                                      }
+                                    })),
+                                    onPressed: () {
+                                      finishedActivitiesSort =
+                                          !finishedActivitiesSort;
+                                      if (finishedActivitiesSort) {
+                                        unfinishedActivitiesSort = false;
+                                      }
+                                      context.read<MapBloc>().add(
+                                            MapEventSearchActivitiesFinished(
+                                                finished: true,
+                                                activities: state.activities,
+                                                value: finishedActivitiesSort),
+                                          );
+                                    },
+                                    child: const Text('Finished'),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            TapRegion(
+                              behavior: HitTestBehavior.opaque,
+                              onTapOutside: (event) {
+                                if (searchResults.isNotEmpty) {
+                                  setState(() {
+                                    searchResults = [];
+                                  });
+                                }
+                              },
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: 0,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height / 3,
+                                ),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: searchResults.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        mapController.move(
+                                            lat_lng.LatLng(
+                                                searchResults[index]
+                                                    .coords
+                                                    .latitude,
+                                                searchResults[index]
+                                                    .coords
+                                                    .longitude),
+                                            14);
+                                        searchResults = [];
+                                        setState(() {});
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                              color: Colors.grey,
+                                            ),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(20))),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child:
+                                              Text(searchResults[index].name),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ],
@@ -205,8 +277,10 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                   IconButton(
                     iconSize: 40,
                     onPressed: () async {
-                      var randomMarker =
-                          mapMarkers[Random().nextInt(mapMarkers.length)];
+                      List<MyMarker> doneMarkers =
+                          mapMarkers.where((element) => !element.done).toList();
+                      var randomMarker = doneMarkers
+                          .toList()[Random().nextInt(doneMarkers.length)];
 
                       mapController.move(
                           lat_lng.LatLng(randomMarker.point.latitude,

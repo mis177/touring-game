@@ -13,13 +13,11 @@ sealed class AuthState {
 }
 
 class AuthStateUninitialized extends AuthState {
-  const AuthStateUninitialized({bool isLoading = false})
-      : super(isLoading: isLoading);
+  const AuthStateUninitialized({super.isLoading});
 }
 
 class AuthStateFirstTimeOpened extends AuthState {
-  const AuthStateFirstTimeOpened({bool isLoading = false})
-      : super(isLoading: isLoading);
+  const AuthStateFirstTimeOpened({super.isLoading});
 }
 
 class AuthStateRegistering extends AuthState {
@@ -27,35 +25,28 @@ class AuthStateRegistering extends AuthState {
 
   const AuthStateRegistering({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class AuthStateLoggingIn extends AuthState {
   final Exception? exception;
   const AuthStateLoggingIn({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class AuthStateLoggedIn extends AuthState {
   final String userEmail;
-  const AuthStateLoggedIn({required this.userEmail, bool isLoading = false})
-      : super(isLoading: isLoading, userMail: userEmail);
+  const AuthStateLoggedIn({required this.userEmail, super.isLoading})
+      : super(userMail: userEmail);
 }
 
 class AuthStateNeedsVerification extends AuthState {
-  const AuthStateNeedsVerification({bool isLoading = false})
-      : super(isLoading: isLoading);
+  const AuthStateNeedsVerification({super.isLoading});
 }
 
 class AuthStateForgotPassword extends AuthState {
@@ -64,8 +55,8 @@ class AuthStateForgotPassword extends AuthState {
   const AuthStateForgotPassword({
     this.exception,
     this.emailSent = false,
-    bool isLoading = false,
-  }) : super(isLoading: isLoading);
+    super.isLoading,
+  });
 }
 
 class AuthStateEmailSent extends AuthState {
@@ -80,13 +71,10 @@ class AuthStateEmailSent extends AuthState {
 class AuthStateUserDeleting extends AuthState {
   final Exception? exception;
   const AuthStateUserDeleting({
-    bool isLoading = false,
+    super.isLoading,
     this.exception,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.loadingText = null,
+  });
 }
 
 class AuthStateUserDeletedError extends AuthState {

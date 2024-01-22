@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:latlong2/latlong.dart' as lat_lng;
+import 'package:touring_game/models/marker.dart';
 import 'package:touring_game/utilities/routes.dart';
 
-List<Marker> getMarkers(
+List<MyMarker> getMarkers(
     {required List<DatabaseActivity> activities,
     required BuildContext context,
     required Function() reloadMarkers}) {
-  List<Marker> markers = [];
+  List<MyMarker> markers = [];
   for (var activity in activities) {
     Icon activityIcon;
     if (activity.isDone) {
@@ -23,7 +23,7 @@ List<Marker> getMarkers(
       );
     }
 
-    markers.add(Marker(
+    markers.add(MyMarker(
       point:
           lat_lng.LatLng(activity.coords.latitude, activity.coords.longitude),
       child: IconButton(
@@ -63,6 +63,7 @@ List<Marker> getMarkers(
         },
         icon: activityIcon,
       ),
+      done: activity.isDone,
     ));
   }
 

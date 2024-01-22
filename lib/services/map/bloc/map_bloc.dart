@@ -8,6 +8,7 @@ import 'package:touring_game/services/map/bloc/map_event.dart';
 import 'package:touring_game/services/map/bloc/map_state.dart';
 import 'package:touring_game/services/map/location_search_repo.dart';
 import 'package:touring_game/utilities/map/current_location.dart';
+import 'package:touring_game/utilities/search_list.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   MapBloc(
@@ -77,6 +78,28 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         activities: service.allActivities,
         currentLocation: null,
         searchResults: addresses,
+      ));
+    });
+
+    on<MapEventSearchActivitiesFinished>((event, emit) {
+      List searchedActivities = [];
+      if (event.value) {
+        searchedActivities = searchWithActivityFinished(
+          list: event.activities,
+          finished: event.finished,
+          value: event.value,
+        );
+      } else {
+        searchedActivities = service.allActivities;
+      }
+
+      emit(MapStateLoadingMarkers(
+          activities: searchedActivities as List<DatabaseActivity>));
+
+      emit(MapStateLoadedMap(
+        activities: searchedActivities,
+        currentLocation: null,
+        searchResults: const [],
       ));
     });
   }

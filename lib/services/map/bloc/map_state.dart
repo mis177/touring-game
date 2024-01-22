@@ -17,20 +17,16 @@ sealed class MapState extends Equatable {
 }
 
 class MapStateUninitialized extends MapState {
-  const MapStateUninitialized({bool isLoading = false})
-      : super(isLoading: isLoading);
+  const MapStateUninitialized({super.isLoading});
 }
 
 class MapStateLoadingMap extends MapState {
   final Exception? exception;
   const MapStateLoadingMap({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class MapStateLoadedMap extends MapState {
@@ -55,12 +51,9 @@ class MapStateSearchingAddress extends MapState {
   final Exception? exception;
   const MapStateSearchingAddress({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class MapStateAddressSearchEnded extends MapState {
@@ -78,10 +71,7 @@ class MapStateLoadingMarkers extends MapState {
   final List<DatabaseActivity> activities;
   const MapStateLoadingMarkers({
     required this.activities,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }

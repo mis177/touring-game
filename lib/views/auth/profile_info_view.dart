@@ -31,7 +31,7 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
       listener: (context, state) async {
         if (state is AuthStateEmailSent) {
           if (state.exception != null) {
-            if (state.exception is UserNotFound) {
+            if (state.exception is UserNotFoundException) {
               await showCustomDialog(
                   context: context, title: 'Error', text: 'Email not found');
             } else {

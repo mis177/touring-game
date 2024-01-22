@@ -9,7 +9,7 @@ class EmailAlreadyInUseAuthException implements Exception {}
 class InvalidEmailAuthException implements Exception {}
 
 // forgot password exceptions
-class UserNotFound implements Exception {}
+class UserNotFoundException implements Exception {}
 
 //delete account exceptions
 class RequiresRecentLoginAuthException implements Exception {}

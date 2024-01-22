@@ -13,20 +13,16 @@ sealed class GameState {
 }
 
 class GameStateUninitialized extends GameState {
-  const GameStateUninitialized({bool isLoading = false})
-      : super(isLoading: isLoading);
+  const GameStateUninitialized({super.isLoading});
 }
 
 class GameStateLoadingPlaces extends GameState {
   final Exception? exception;
   const GameStateLoadingPlaces({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class GameStateLoadedPlaces extends GameState {
@@ -38,12 +34,9 @@ class GameStateLoadingActivities extends GameState {
   final Exception? exception;
   const GameStateLoadingActivities({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class GameStateLoadedActivities extends GameState {
@@ -55,12 +48,9 @@ class GameStateLoadingActivityDetails extends GameState {
   final Exception? exception;
   const GameStateLoadingActivityDetails({
     this.exception,
-    bool isLoading = false,
-    String? loadingText,
-  }) : super(
-          isLoading: isLoading,
-          loadingText: loadingText,
-        );
+    super.isLoading,
+    super.loadingText = null,
+  });
 }
 
 class GameStateLoadedActivityDetails extends GameState {
