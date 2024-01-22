@@ -56,12 +56,21 @@ class GameEventSearchPlaces extends GameEvent {
   List<Object?> get props => [text];
 }
 
-class GameEventSearchActivities extends GameEvent {
+class GameEventSearchActivitiesText extends GameEvent {
   final String text;
   final List<DatabaseActivity> activities;
 
-  const GameEventSearchActivities(
+  const GameEventSearchActivitiesText(
       {required this.text, required this.activities});
   @override
   List<Object?> get props => [text];
+}
+
+class GameEventSearchActivitiesFinished extends GameEvent {
+  final bool finished;
+  final bool value;
+  final List<DatabaseActivity> activities;
+
+  const GameEventSearchActivitiesFinished(
+      {required this.finished, required this.value, required this.activities});
 }

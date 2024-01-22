@@ -73,11 +73,11 @@ class _MenuView extends State<MenuView> {
     placesLoaded = true;
     return Scaffold(
         appBar: AppBar(
-          title: Center(
-              child: Text(
+          centerTitle: true,
+          title: Text(
             _scaffoldText,
             style: const TextStyle(fontWeight: FontWeight.bold),
-          )),
+          ),
           actions: [
             PopupMenuButton<MenuAction>(
               onSelected: (value) async {

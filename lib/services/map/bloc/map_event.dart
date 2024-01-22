@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:touring_game/models/activity.dart';
 
 sealed class MapEvent extends Equatable {
   const MapEvent();
@@ -25,4 +26,16 @@ class MapEventSearchAddress extends MapEvent {
   const MapEventSearchAddress({required this.searchedText});
   @override
   List<Object?> get props => [];
+}
+
+class MapEventSearchActivitiesFinished extends MapEvent {
+  final bool finished;
+  final bool value;
+  final List<DatabaseActivity> activities;
+
+  const MapEventSearchActivitiesFinished({
+    required this.finished,
+    required this.value,
+    required this.activities,
+  });
 }

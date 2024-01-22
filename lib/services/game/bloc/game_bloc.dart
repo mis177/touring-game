@@ -78,15 +78,31 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     on<GameEventSearchPlaces>((event, emit) {
       List searchedPlaces = [];
-      searchedPlaces = searchList(event.places, event.text);
+      searchedPlaces = searchWithText(event.places, event.text);
 
       emit(GameStateLoadedPlaces(
           placeslist: searchedPlaces as List<DatabasePlace>));
     });
 
-    on<GameEventSearchActivities>((event, emit) {
+    on<GameEventSearchActivitiesText>((event, emit) {
       List searchedActivities = [];
-      searchedActivities = searchList(event.activities, event.text);
+      searchedActivities = searchWithText(event.activities, event.text);
+
+      emit(GameStateLoadedActivities(
+          activitiesList: searchedActivities as List<DatabaseActivity>));
+    });
+
+    on<GameEventSearchActivitiesFinished>((event, emit) {
+      List searchedActivities = [];
+      if (event.value) {
+        searchedActivities = searchWithActivityFinished(
+          list: event.activities,
+          finished: event.finished,
+          value: event.value,
+        );
+      } else {
+        searchedActivities = event.activities;
+      }
 
       emit(GameStateLoadedActivities(
           activitiesList: searchedActivities as List<DatabaseActivity>));

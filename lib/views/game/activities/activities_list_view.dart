@@ -31,7 +31,8 @@ class ActivitiesList extends StatefulWidget {
 
 class _ActivitiesListState extends State<ActivitiesList> {
   List<DatabaseActivity> filteredActivities = [];
-
+  bool unfinishedActivitiesSort = false;
+  bool finishedActivitiesSort = false;
   void reloadList() {
     setState(() {});
   }
@@ -73,10 +74,69 @@ class _ActivitiesListState extends State<ActivitiesList> {
                         )),
                     onChanged: (value) {
                       context.read<GameBloc>().add(
-                            GameEventSearchActivities(
+                            GameEventSearchActivitiesText(
                                 text: value, activities: activities),
                           );
                     },
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ButtonStyle(backgroundColor:
+                              MaterialStateProperty.resolveWith<Color?>(
+                                  (Set<MaterialState> states) {
+                            if (unfinishedActivitiesSort) {
+                              return Colors.green[100];
+                            } else {
+                              return Colors.grey[400];
+                            }
+                          })),
+                          onPressed: () {
+                            unfinishedActivitiesSort =
+                                !unfinishedActivitiesSort;
+                            if (unfinishedActivitiesSort) {
+                              finishedActivitiesSort = false;
+                            }
+                            context.read<GameBloc>().add(
+                                  GameEventSearchActivitiesFinished(
+                                      finished: false,
+                                      activities: activities,
+                                      value: unfinishedActivitiesSort),
+                                );
+                          },
+                          child: const Text('Unfinished'),
+                        ),
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ButtonStyle(backgroundColor:
+                              MaterialStateProperty.resolveWith<Color?>(
+                                  (Set<MaterialState> states) {
+                            if (finishedActivitiesSort) {
+                              return Colors.green[100];
+                            } else {
+                              return Colors.grey[400];
+                            }
+                          })),
+                          onPressed: () {
+                            finishedActivitiesSort = !finishedActivitiesSort;
+                            if (finishedActivitiesSort) {
+                              unfinishedActivitiesSort = false;
+                            }
+                            context.read<GameBloc>().add(
+                                  GameEventSearchActivitiesFinished(
+                                      finished: true,
+                                      activities: activities,
+                                      value: finishedActivitiesSort),
+                                );
+                          },
+                          child: const Text('Finished'),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10),
                   Expanded(

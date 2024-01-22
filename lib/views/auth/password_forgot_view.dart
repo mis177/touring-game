@@ -34,7 +34,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       listener: (context, state) async {
         if (state is AuthStateForgotPassword) {
           if (state.exception != null) {
-            if (state.exception is UserNotFound) {
+            if (state.exception is UserNotFoundException) {
               await showCustomDialog(
                   context: context, title: 'Error', text: 'Email not found');
             } else {
