@@ -27,7 +27,7 @@ Game:
 
 
 # TODO:
-Profile tab, some minor UI changes, add splash screen and app icon. Add credits, Internationalizing 
+Profile tab, some minor UI changes, add splash screen and app icon. Add credits, Internationalizing, tests
 
 # Credits:
 flutter_map  https://pub.dev/packages/flutter_map
