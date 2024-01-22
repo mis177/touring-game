@@ -20,7 +20,8 @@ Game:
 
 
 ![obraz](https://github.com/mis177/touring-game/assets/56123042/40337b9c-41dc-4c14-a0a9-17fc3391c46c)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/a4e86a6a-15d1-4436-83e9-5221c56f274a)
-  ![obraz](https://github.com/mis177/touring-game/assets/56123042/4b08c83d-4584-4d0c-83b0-ad595542d79f)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/0aa9516c-1df1-4115-9662-2213388efbaa)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/b92dc146-05a3-4299-bb63-574282610bb8)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/d87b2906-e474-4798-b84e-1660326eb047)
+  ![obraz](https://github.com/mis177/touring-game/assets/56123042/cf15c644-e12c-4bc3-96e7-117cb161ce9b)
+  ![obraz](https://github.com/mis177/touring-game/assets/56123042/0aa9516c-1df1-4115-9662-2213388efbaa)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/b92dc146-05a3-4299-bb63-574282610bb8)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/d87b2906-e474-4798-b84e-1660326eb047)
 
 
 
