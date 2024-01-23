@@ -9,10 +9,8 @@ sealed class GameEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// ignore: must_be_immutable
 class GameEventLoadPlaces extends GameEvent {
-  List<DatabasePlace> places;
-  GameEventLoadPlaces({this.places = const []});
+  const GameEventLoadPlaces();
 }
 
 class GameEventLoadActivities extends GameEvent {

@@ -14,30 +14,26 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       if (service.places.isEmpty) {
         emit(const GameStateLoadingPlaces(
             isLoading: true, loadingText: 'Loading places'));
-        List<DatabasePlace> placeslist = [];
         try {
-          placeslist = await service.allPlaces();
-          event.places = placeslist;
+          await service.allPlaces();
         } on Exception catch (e) {
           emit(GameStateLoadingPlaces(
             exception: e,
           ));
         }
-        emit(GameStateLoadedPlaces(placeslist: event.places));
-      } else {
-        emit(GameStateLoadedPlaces(placeslist: service.places));
       }
+      emit(GameStateLoadedPlaces(
+          placesList: service.places, activitiesList: service.allActivities));
     });
 
-    on<GameEventLoadActivities>((event, emit) async {
+    on<GameEventLoadActivities>((event, emit) {
       emit(const GameStateLoadingActivities(
           isLoading: true, loadingText: 'Loading activities'));
 
       List<DatabaseActivity> activitiesList = [];
 
       try {
-        activitiesList =
-            await service.getPlaceActivities(placeId: event.placeId);
+        activitiesList = service.getPlaceActivities(placeId: event.placeId);
       } on Exception catch (e) {
         emit(GameStateLoadingActivities(
           exception: e,
@@ -81,7 +77,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       searchedPlaces = searchWithText(event.places, event.text);
 
       emit(GameStateLoadedPlaces(
-          placeslist: searchedPlaces as List<DatabasePlace>));
+          placesList: searchedPlaces as List<DatabasePlace>,
+          activitiesList: service.allActivities));
     });
 
     on<GameEventSearchActivitiesText>((event, emit) {

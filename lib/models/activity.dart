@@ -8,6 +8,7 @@ class DatabaseActivity {
   final String description;
   final GeoPoint coords;
   bool isDone = false;
+  final String placeId;
 
   DatabaseActivity(
       {required this.id,
@@ -16,5 +17,6 @@ class DatabaseActivity {
       required this.isDone,
       required this.title,
       required this.description,
-      required this.coords});
+      required this.coords,
+      required this.placeId});
 }

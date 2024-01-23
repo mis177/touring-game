@@ -15,6 +15,10 @@ class PlacesList extends StatefulWidget {
 }
 
 class _PlacesListState extends State<PlacesList> {
+  void reloadList() {
+    setState(() {});
+  }
+
   List<DatabasePlace> allPlaces = [];
   @override
   Widget build(BuildContext context) {
@@ -30,17 +34,17 @@ class _PlacesListState extends State<PlacesList> {
 
         if (state is GameStateLoadedActivities) {
           context.read<GameBloc>().add(
-                GameEventLoadPlaces(),
+                const GameEventLoadPlaces(),
               );
-          Navigator.of(context).pushNamed(
-            openActivitiesList,
-            arguments: state.activitiesList,
-          );
+          Navigator.of(context).pushNamed(openActivitiesList, arguments: [
+            state.activitiesList,
+            reloadList,
+          ]);
         }
       },
       builder: (context, state) {
         if (state is GameStateLoadedPlaces) {
-          if (allPlaces.isEmpty) allPlaces = state.placeslist;
+          if (allPlaces.isEmpty) allPlaces = state.placesList;
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: Scaffold(
@@ -63,23 +67,31 @@ class _PlacesListState extends State<PlacesList> {
                   const SizedBox(height: 10),
                   Expanded(
                     child: ListView.builder(
-                        itemCount: state.placeslist.length,
-                        itemBuilder: (ctx, index) => Card(
-                                child: ListTile(
-                              leading: const Icon(Icons.place_outlined),
-                              title: Text(
-                                state.placeslist[index].name,
-                                maxLines: 1,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onTap: () {
-                                context.read<GameBloc>().add(
-                                      GameEventLoadActivities(
-                                          placeId: state.placeslist[index].id),
-                                    );
-                              },
-                            ))),
+                        itemCount: state.placesList.length,
+                        itemBuilder: (ctx, index) {
+                          var placeActivities = state.activitiesList.where(
+                              (element) =>
+                                  element.placeId ==
+                                  state.placesList[index].id);
+                          return Card(
+                              child: ListTile(
+                            leading: const Icon(Icons.place_outlined),
+                            title: Text(
+                              state.placesList[index].name,
+                              maxLines: 1,
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Text(
+                                '${placeActivities.where((element) => element.isDone == true).length}/${placeActivities.length}'),
+                            onTap: () {
+                              context.read<GameBloc>().add(
+                                    GameEventLoadActivities(
+                                        placeId: state.placesList[index].id),
+                                  );
+                            },
+                          ));
+                        }),
                   ),
                 ],
               ),

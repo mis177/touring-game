@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/address.dart';
-import 'package:touring_game/models/place.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/services/map/bloc/map_event.dart';
 import 'package:touring_game/services/map/bloc/map_state.dart';
@@ -15,7 +14,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       FirebaseCloudGameService service, LocationSearchRepository? repository)
       : super(const MapStateUninitialized(isLoading: true)) {
     on<MapEventLoadMap>((event, emit) async {
-      List<DatabasePlace> placesList = [];
       List<DatabaseActivity> activitiesList = [];
 
       emit(const MapStateLoadingMap(
@@ -28,15 +26,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             exception: e,
           ));
         }
-      }
-      placesList = service.places;
-
-      try {
-        activitiesList = await service.getAllActivities(placesList);
-      } on Exception catch (e) {
-        emit(MapStateLoadingMap(
-          exception: e,
-        ));
       }
 
       activitiesList = service.allActivities;
@@ -82,17 +71,15 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     });
 
     on<MapEventSearchActivitiesFinished>((event, emit) {
-      List searchedActivities = [];
+      List searchedActivities = service.allActivities;
+
       if (event.value) {
         searchedActivities = searchWithActivityFinished(
-          list: event.activities,
+          list: service.allActivities,
           finished: event.finished,
           value: event.value,
         );
-      } else {
-        searchedActivities = service.allActivities;
       }
-
       emit(MapStateLoadingMarkers(
           activities: searchedActivities as List<DatabaseActivity>));
 
