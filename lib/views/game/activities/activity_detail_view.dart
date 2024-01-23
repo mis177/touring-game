@@ -36,6 +36,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
     return PopScope(
       onPopInvoked: (value) {
         argumentList[1]();
+        argumentList[2]();
       },
       child: BlocConsumer<GameBloc, GameState>(
         listener: (context, state) {

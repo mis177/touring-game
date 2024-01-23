@@ -43,13 +43,15 @@ class FirebaseCloudGameProvider {
         var databaseData = activity.data();
 
         activitiesList.add(DatabaseActivity(
-            name: databaseData['name'],
-            id: activity.id,
-            imagePath: databaseData['image_path'] ?? '',
-            isDone: isDone,
-            title: databaseData['title'] ?? '',
-            description: databaseData['description'] ?? '',
-            coords: databaseData['coords']));
+          name: databaseData['name'],
+          id: activity.id,
+          imagePath: databaseData['image_path'] ?? '',
+          isDone: isDone,
+          title: databaseData['title'] ?? '',
+          description: databaseData['description'] ?? '',
+          coords: databaseData['coords'],
+          placeId: placeId,
+        ));
       }
     });
 

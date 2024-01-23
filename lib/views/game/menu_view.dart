@@ -67,7 +67,7 @@ class _MenuView extends State<MenuView> {
   @override
   Widget build(BuildContext context) {
     context.read<GameBloc>().add(
-          GameEventLoadPlaces(),
+          const GameEventLoadPlaces(),
         );
 
     placesLoaded = true;

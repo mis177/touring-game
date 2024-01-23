@@ -19,21 +19,23 @@ class FirebaseCloudGameService {
 
   Future<List<DatabasePlace>> allPlaces() async {
     List<DatabasePlace> placesList = [];
-    await provider.allPlaces().then((value) {
+    await provider.allPlaces().then((value) async {
       for (var doc in value.docs) {
         placesList.add(DatabasePlace(
           name: doc.data()['name'],
           id: doc.id,
         ));
+        allActivities += await provider.getPlaceActivities(placeId: doc.id);
       }
     });
     places = placesList;
     return placesList;
   }
 
-  Future<List<DatabaseActivity>> getPlaceActivities(
-      {required String placeId}) async {
-    return await provider.getPlaceActivities(placeId: placeId);
+  List<DatabaseActivity> getPlaceActivities({required String placeId}) {
+    return allActivities
+        .where((element) => element.placeId == placeId)
+        .toList();
   }
 
   Future<Image> getImage({required String path}) async {
@@ -45,14 +47,14 @@ class FirebaseCloudGameService {
     return provider.activityDoneChanged(activity);
   }
 
-  Future<List<DatabaseActivity>> getAllActivities(
-      List<DatabasePlace> places) async {
-    List<DatabaseActivity> activities = [];
-    for (var place in places) {
-      activities += await getPlaceActivities(placeId: place.id);
-    }
-    allActivities = activities;
+  // Future<List<DatabaseActivity>> getAllActivities(
+  //     List<DatabasePlace> places) async {
+  //   List<DatabaseActivity> activities = [];
+  //   for (var place in places) {
+  //     activities += await getPlaceActivities(placeId: place.id);
+  //   }
+  //   allActivities = activities;
 
-    return activities;
-  }
+  //   return activities;
+  // }
 }

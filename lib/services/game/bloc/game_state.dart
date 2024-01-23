@@ -26,8 +26,12 @@ class GameStateLoadingPlaces extends GameState {
 }
 
 class GameStateLoadedPlaces extends GameState {
-  final List<DatabasePlace> placeslist;
-  const GameStateLoadedPlaces({required this.placeslist});
+  final List<DatabasePlace> placesList;
+  final List<DatabaseActivity> activitiesList;
+  const GameStateLoadedPlaces({
+    required this.placesList,
+    required this.activitiesList,
+  });
 }
 
 class GameStateLoadingActivities extends GameState {

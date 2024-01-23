@@ -39,8 +39,8 @@ class _ActivitiesListState extends State<ActivitiesList> {
 
   @override
   Widget build(BuildContext context) {
-    final activities =
-        ModalRoute.of(context)!.settings.arguments as List<DatabaseActivity>;
+    final argumentList = ModalRoute.of(context)!.settings.arguments as List;
+    final activities = argumentList[0];
     filteredActivities = activities;
     return BlocConsumer<GameBloc, GameState>(
       listener: (context, state) {
@@ -163,7 +163,8 @@ class _ActivitiesListState extends State<ActivitiesList> {
                                       openActivitityDetails,
                                       arguments: [
                                         filteredActivities[index],
-                                        reloadList
+                                        reloadList,
+                                        argumentList[1],
                                       ]);
                                 },
                               ));
