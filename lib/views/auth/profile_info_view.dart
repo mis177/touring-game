@@ -9,7 +9,9 @@ import 'package:touring_game/utilities/dialogs/logout_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 
 class ProfileInfoView extends StatefulWidget {
-  const ProfileInfoView({super.key});
+  const ProfileInfoView({super.key, required this.activitiesDone});
+
+  final activitiesDone;
 
   @override
   State<ProfileInfoView> createState() => _ProfileInfoViewState();
@@ -69,48 +71,94 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
             state is AuthStateUserDeletedError) {
           return Center(
             child: Padding(
-              padding: const EdgeInsets.all(40.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton.filled(
-                    icon: const Icon(
-                      Icons.person,
-                      size: 80,
+                  Card(
+                    color: Colors.grey[100],
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        children: [
+                          IconButton.filled(
+                            icon: const Icon(
+                              Icons.person,
+                              size: 80,
+                            ),
+                            onPressed: () {},
+                          ),
+                          const SizedBox(height: 25),
+                          const Text(
+                            'Email:',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 32),
+                          ),
+                          Text(
+                            state.userMail!,
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                          const SizedBox(height: 40),
+                          const Text(
+                            'Your activities status:',
+                            style: TextStyle(fontSize: 25),
+                          ),
+                          Text(
+                            widget.activitiesDone,
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.green),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Keep up good work!',
+                            style: TextStyle(fontSize: 20, color: Colors.red),
+                          ),
+                        ],
+                      ),
                     ),
-                    onPressed: () {},
                   ),
-                  const SizedBox(height: 25),
-                  const Text(
-                    'Email:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(state.userMail!),
-                  const SizedBox(height: 100),
-                  ElevatedButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                              const AuthEventChangePassword(),
-                            );
-                      },
-                      child: const Text('Reset password')),
-                  const SizedBox(height: 25),
-                  ElevatedButton(
-                      onPressed: () async {
-                        final shouldDeleteUser = await showLogoutDialog(
-                            context: context,
-                            title: 'Delete',
-                            text: 'Are you sure you want to delete account?');
-                        if (shouldDeleteUser == true) {
-                          // ignore: use_build_context_synchronously
-                          context.read<AuthBloc>().add(
-                                const AuthEventDeleteUser(),
-                              );
-                        }
-                      },
-                      child: const Text(
-                        'Delete account',
-                        style: TextStyle(color: Colors.red),
-                      )),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<AuthBloc>().add(
+                                  const AuthEventChangePassword(),
+                                );
+                          },
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width / 2,
+                            child: const Center(child: Text('Reset password')),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        ElevatedButton(
+                            onPressed: () async {
+                              final shouldDeleteUser = await showLogoutDialog(
+                                  context: context,
+                                  title: 'Delete',
+                                  text:
+                                      'Are you sure you want to delete account?');
+                              if (shouldDeleteUser == true) {
+                                // ignore: use_build_context_synchronously
+                                context.read<AuthBloc>().add(
+                                      const AuthEventDeleteUser(),
+                                    );
+                              }
+                            },
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width / 2,
+                              child: const Center(
+                                child: Text(
+                                  'Delete account',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            )),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),

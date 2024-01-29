@@ -13,9 +13,10 @@ import 'package:touring_game/services/map/bloc/map_bloc.dart';
 import 'package:touring_game/services/map/bloc/map_event.dart';
 import 'package:touring_game/services/map/bloc/map_state.dart';
 import 'package:touring_game/services/map/location_search_repo.dart';
+import 'package:touring_game/utilities/map/activities_filter_button.dart';
+import 'package:touring_game/utilities/map/flutter_map.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 import 'package:touring_game/utilities/map/get_markers.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ActivitiesMapProvider extends StatelessWidget {
   const ActivitiesMapProvider({super.key});
@@ -44,7 +45,12 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
   List<MyMarker> mapMarkers = [];
   CurrentLocationLayer locationLayer = CurrentLocationLayer();
   bool unfinishedActivitiesSort = false;
+
   bool finishedActivitiesSort = false;
+
+  void refreshWidget() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,40 +93,12 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
           return Scaffold(
             body: Stack(
               children: [
-                FlutterMap(
-                    mapController: mapController,
-                    options: MapOptions(
-                      initialCenter: lat_lng.LatLng(
-                          state.currentLocation == null
-                              ? 50.5381
-                              : state.currentLocation!.latitude,
-                          state.currentLocation == null
-                              ? 22.7252
-                              : state.currentLocation!.longitude),
-                      initialZoom: 18,
-                      maxZoom: 20,
-                      minZoom: 4,
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        maxNativeZoom: 20,
-                        minNativeZoom: 4,
-                      ),
-                      RichAttributionWidget(
-                        animationConfig: const ScaleRAWA(),
-                        attributions: [
-                          TextSourceAttribution(
-                            'OpenStreetMap contributors',
-                            onTap: () => launchUrl(Uri.parse(
-                                'https://openstreetmap.org/copyright')),
-                          ),
-                        ],
-                      ),
-                      MarkerLayer(markers: mapMarkers),
-                      locationLayer,
-                    ]),
+                loadMap(
+                  mapController: mapController,
+                  currentLocation: state.currentLocation,
+                  locationLayer: locationLayer,
+                  mapMarkers: mapMarkers,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Column(
@@ -133,7 +111,7 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                             filled: true,
                             fillColor: Colors.white,
                             prefixIcon: const Icon(Icons.search),
-                            hintText: 'Search',
+                            hintText: 'Search address',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                             )),
@@ -150,60 +128,51 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Expanded(
-                                  child: ElevatedButton(
-                                    style: ButtonStyle(backgroundColor:
-                                        MaterialStateProperty.resolveWith<
-                                                Color?>(
-                                            (Set<MaterialState> states) {
-                                      if (unfinishedActivitiesSort) {
-                                        return Colors.green[100];
-                                      } else {
-                                        return Colors.grey[400];
-                                      }
-                                    })),
-                                    onPressed: () {
-                                      unfinishedActivitiesSort =
-                                          !unfinishedActivitiesSort;
-                                      if (unfinishedActivitiesSort) {
-                                        finishedActivitiesSort = false;
-                                      }
-                                      context.read<MapBloc>().add(
-                                            MapEventSearchActivitiesFinished(
-                                                finished: false,
-                                                activities: state.activities,
-                                                value:
-                                                    unfinishedActivitiesSort),
-                                          );
-                                    },
-                                    child: const Text('Unfinished'),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 5.0),
+                                    child: getFilterButton(
+                                      clickedThis: unfinishedActivitiesSort,
+                                      clickedOther: finishedActivitiesSort,
+                                      function: () {
+                                        unfinishedActivitiesSort =
+                                            !unfinishedActivitiesSort;
+                                        if (unfinishedActivitiesSort) {
+                                          finishedActivitiesSort = false;
+                                        }
+                                        context.read<MapBloc>().add(
+                                              MapEventSearchActivitiesFinished(
+                                                  finished: false,
+                                                  activities: state.activities,
+                                                  value:
+                                                      unfinishedActivitiesSort),
+                                            );
+                                      },
+                                      text: 'Unfinished',
+                                    ),
                                   ),
                                 ),
                                 Expanded(
-                                  child: ElevatedButton(
-                                    style: ButtonStyle(backgroundColor:
-                                        MaterialStateProperty.resolveWith<
-                                                Color?>(
-                                            (Set<MaterialState> states) {
-                                      if (finishedActivitiesSort) {
-                                        return Colors.green[100];
-                                      } else {
-                                        return Colors.grey[400];
-                                      }
-                                    })),
-                                    onPressed: () {
-                                      finishedActivitiesSort =
-                                          !finishedActivitiesSort;
-                                      if (finishedActivitiesSort) {
-                                        unfinishedActivitiesSort = false;
-                                      }
-                                      context.read<MapBloc>().add(
-                                            MapEventSearchActivitiesFinished(
-                                                finished: true,
-                                                activities: state.activities,
-                                                value: finishedActivitiesSort),
-                                          );
-                                    },
-                                    child: const Text('Finished'),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 5.0),
+                                    child: getFilterButton(
+                                      clickedThis: finishedActivitiesSort,
+                                      clickedOther: unfinishedActivitiesSort,
+                                      function: () {
+                                        finishedActivitiesSort =
+                                            !finishedActivitiesSort;
+                                        if (finishedActivitiesSort) {
+                                          unfinishedActivitiesSort = false;
+                                        }
+                                        context.read<MapBloc>().add(
+                                              MapEventSearchActivitiesFinished(
+                                                  finished: true,
+                                                  activities: state.activities,
+                                                  value:
+                                                      finishedActivitiesSort),
+                                            );
+                                      },
+                                      text: 'Finished',
+                                    ),
                                   ),
                                 ),
                               ],
@@ -227,6 +196,14 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                                   shrinkWrap: true,
                                   itemCount: searchResults.length,
                                   itemBuilder: (context, index) {
+                                    // return searchResultTile(
+                                    //   mapController: mapController,
+                                    //   searchResults: searchResults,
+                                    //   index: index,
+                                    //   function: () {
+                                    //     setState(() {searchResults = [];});
+                                    //   },
+                                    // );
                                     return GestureDetector(
                                       onTap: () {
                                         mapController.move(
@@ -238,8 +215,10 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                                                     .coords
                                                     .longitude),
                                             14);
-                                        searchResults = [];
-                                        setState(() {});
+
+                                        setState(() {
+                                          searchResults = [];
+                                        });
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(

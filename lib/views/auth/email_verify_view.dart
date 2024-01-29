@@ -14,7 +14,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.amber,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -43,6 +42,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
             const SizedBox(height: 25),
             FilledButton(
+              style:
+                  FilledButton.styleFrom(backgroundColor: Colors.blueGrey[800]),
               onPressed: () {
                 context
                     .read<AuthBloc>()
@@ -52,6 +53,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
             const SizedBox(height: 15),
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blueGrey[800]),
               onPressed: () async {
                 context.read<AuthBloc>().add(const AuthEventLogOut());
               },

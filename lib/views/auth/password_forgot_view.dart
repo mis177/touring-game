@@ -53,7 +53,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.amber,
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -80,12 +79,18 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 controller: _controller,
                 decoration: const InputDecoration(
                   labelText: 'Your email adress',
+                  prefixIcon: Icon(Icons.email),
                   alignLabelWithHint: true,
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
                 ),
               ),
               const SizedBox(height: 25),
               FilledButton(
+                style: FilledButton.styleFrom(
+                    backgroundColor: Colors.blueGrey[800]),
                 onPressed: () {
                   final email = _controller.text;
                   context
@@ -96,6 +101,8 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               ),
               const SizedBox(height: 15),
               OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.blueGrey[800]),
                 onPressed: () {
                   context.read<AuthBloc>().add(
                         const AuthEventLogOut(),

@@ -49,7 +49,6 @@ class _LoginViewState extends State<LoginView> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.amber,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(25),
@@ -66,7 +65,6 @@ class _LoginViewState extends State<LoginView> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,
-                    //  color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 50),
@@ -88,7 +86,11 @@ class _LoginViewState extends State<LoginView> {
                     prefixIcon: Icon(Icons.email),
                     alignLabelWithHint: true,
                     labelText: 'Enter your email',
-                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -112,8 +114,13 @@ class _LoginViewState extends State<LoginView> {
                       },
                     ),
                     alignLabelWithHint: true,
+                    prefixIcon: const Icon(Icons.lock),
                     labelText: 'Enter your password',
-                    border: const OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
                   ),
                 ),
                 Row(
@@ -125,13 +132,16 @@ class _LoginViewState extends State<LoginView> {
                               const AuthEventForgotPassword(),
                             );
                       },
-                      child: const Text(
+                      child: Text(
                         'Forgot password',
+                        style: TextStyle(color: Colors.blueGrey[800]),
                       ),
                     ),
                   ],
                 ),
                 FilledButton(
+                  style: FilledButton.styleFrom(
+                      backgroundColor: Colors.blueGrey[800]),
                   onPressed: () async {
                     final email = _email.text;
                     final password = _password.text;
@@ -158,18 +168,18 @@ class _LoginViewState extends State<LoginView> {
                     TextSpan(
                       children: <TextSpan>[
                         const TextSpan(
-                          text: 'Not registered? ',
-                        ),
+                            text: 'Not registered? ',
+                            style: TextStyle(color: Colors.black)),
                         TextSpan(
                           text: 'Sign Up',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).indicatorColor,
+                            color: Colors.lightBlue[300],
                           ),
                         ),
                       ],
                     ),
-                  ), //const Text('Not registered? Sign Up'),
+                  ),
                 )
               ],
             ),
