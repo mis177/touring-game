@@ -17,13 +17,16 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+  late final TextEditingController _passwordConfirm;
   bool obscureText = true;
+  bool wrongConfirmation = false;
   IconData visibilityIcon = Icons.visibility;
 
   @override
   void initState() {
     _email = TextEditingController();
     _password = TextEditingController();
+    _passwordConfirm = TextEditingController();
     super.initState();
   }
 
@@ -31,6 +34,7 @@ class _RegisterViewState extends State<RegisterView> {
   void dispose() {
     _email.dispose();
     _password.dispose();
+    _passwordConfirm.dispose();
     super.dispose();
   }
 
@@ -138,6 +142,25 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _passwordConfirm,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    alignLabelWithHint: true,
+                    labelText: 'Confirm your password',
+                    errorText:
+                        wrongConfirmation ? 'Passwords don\'t match ' : null,
+                    prefixIcon: const Icon(Icons.lock),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 48),
                 FilledButton(
                   style: FilledButton.styleFrom(
@@ -145,12 +168,22 @@ class _RegisterViewState extends State<RegisterView> {
                   onPressed: () async {
                     final email = _email.text;
                     final password = _password.text;
-                    context.read<AuthBloc>().add(
-                          AuthEventRegister(
-                            email,
-                            password,
-                          ),
-                        );
+                    final passwordConfirm = _passwordConfirm.text;
+
+                    if (password != passwordConfirm) {
+                      setState(() {
+                        _passwordConfirm.clear();
+                        wrongConfirmation = true;
+                      });
+                    } else {
+                      wrongConfirmation = false;
+                      context.read<AuthBloc>().add(
+                            AuthEventRegister(
+                              email,
+                              password,
+                            ),
+                          );
+                    }
                   },
                   child: const Text(
                     'Sign Up',
