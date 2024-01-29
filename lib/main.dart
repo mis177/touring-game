@@ -22,9 +22,9 @@ void main() {
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      // theme: ThemeData(
+      //     //primarySwatch: Colors.blue,
+      //     ),
       home: BlocProvider<AuthBloc>(
         create: (context) => AuthBloc(AuthService.firebase()),
         child: const HomePage(),

@@ -7,6 +7,7 @@ import 'package:touring_game/services/game/bloc/game_state.dart';
 import 'package:touring_game/services/game/game_provider.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/utilities/map/activities_filter_button.dart';
 import 'package:touring_game/utilities/routes.dart';
 
 class ActivitiesListBlocProvider extends StatelessWidget {
@@ -58,8 +59,12 @@ class _ActivitiesListState extends State<ActivitiesList> {
       },
       builder: (context, state) {
         return Scaffold(
+            backgroundColor: Colors.grey[300],
             appBar: AppBar(
-              title: const Text('Activities list'),
+              backgroundColor: Colors.grey[300],
+              centerTitle: true,
+              title: const Text('Activities list',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
             ),
             body: Padding(
               padding: const EdgeInsets.all(15.0),
@@ -69,6 +74,8 @@ class _ActivitiesListState extends State<ActivitiesList> {
                     decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),
                         hintText: 'Search',
+                        filled: true,
+                        fillColor: Colors.grey[100],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         )),
@@ -84,56 +91,48 @@ class _ActivitiesListState extends State<ActivitiesList> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(
-                        child: ElevatedButton(
-                          style: ButtonStyle(backgroundColor:
-                              MaterialStateProperty.resolveWith<Color?>(
-                                  (Set<MaterialState> states) {
-                            if (unfinishedActivitiesSort) {
-                              return Colors.green[100];
-                            } else {
-                              return Colors.grey[400];
-                            }
-                          })),
-                          onPressed: () {
-                            unfinishedActivitiesSort =
-                                !unfinishedActivitiesSort;
-                            if (unfinishedActivitiesSort) {
-                              finishedActivitiesSort = false;
-                            }
-                            context.read<GameBloc>().add(
-                                  GameEventSearchActivitiesFinished(
-                                      finished: false,
-                                      activities: activities,
-                                      value: unfinishedActivitiesSort),
-                                );
-                          },
-                          child: const Text('Unfinished'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 5.0),
+                          child: getFilterButton(
+                            clickedThis: unfinishedActivitiesSort,
+                            clickedOther: finishedActivitiesSort,
+                            function: () {
+                              unfinishedActivitiesSort =
+                                  !unfinishedActivitiesSort;
+                              if (unfinishedActivitiesSort) {
+                                finishedActivitiesSort = false;
+                              }
+                              context.read<GameBloc>().add(
+                                    GameEventSearchActivitiesFinished(
+                                        finished: false,
+                                        activities: activities,
+                                        value: unfinishedActivitiesSort),
+                                  );
+                            },
+                            text: 'Unfinished',
+                          ),
                         ),
                       ),
                       Expanded(
-                        child: ElevatedButton(
-                          style: ButtonStyle(backgroundColor:
-                              MaterialStateProperty.resolveWith<Color?>(
-                                  (Set<MaterialState> states) {
-                            if (finishedActivitiesSort) {
-                              return Colors.green[100];
-                            } else {
-                              return Colors.grey[400];
-                            }
-                          })),
-                          onPressed: () {
-                            finishedActivitiesSort = !finishedActivitiesSort;
-                            if (finishedActivitiesSort) {
-                              unfinishedActivitiesSort = false;
-                            }
-                            context.read<GameBloc>().add(
-                                  GameEventSearchActivitiesFinished(
-                                      finished: true,
-                                      activities: activities,
-                                      value: finishedActivitiesSort),
-                                );
-                          },
-                          child: const Text('Finished'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5.0),
+                          child: getFilterButton(
+                            clickedThis: finishedActivitiesSort,
+                            clickedOther: unfinishedActivitiesSort,
+                            function: () {
+                              finishedActivitiesSort = !finishedActivitiesSort;
+                              if (finishedActivitiesSort) {
+                                unfinishedActivitiesSort = false;
+                              }
+                              context.read<GameBloc>().add(
+                                    GameEventSearchActivitiesFinished(
+                                        finished: true,
+                                        activities: activities,
+                                        value: finishedActivitiesSort),
+                                  );
+                            },
+                            text: 'Finished',
+                          ),
                         ),
                       ),
                     ],
@@ -148,6 +147,7 @@ class _ActivitiesListState extends State<ActivitiesList> {
                             activityColor = Colors.green;
                           }
                           return Card(
+                              color: Colors.grey[100],
                               shadowColor: activityColor,
                               child: ListTile(
                                 leading: const Icon(Icons.attractions),

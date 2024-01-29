@@ -39,7 +39,10 @@ class FirebaseCloudGameService {
   }
 
   Future<Image> getImage({required String path}) async {
-    var test = Image.network(await provider.getImage(path: path));
+    var test = Image.network(
+      await provider.getImage(path: path),
+      fit: BoxFit.scaleDown,
+    );
     return test;
   }
 

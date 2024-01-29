@@ -9,7 +9,7 @@ class WelcomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.amber,
+      //  backgroundColor: Colors.grey[300],
       body: Padding(
         padding: const EdgeInsets.all(25),
         child: Column(
@@ -26,7 +26,6 @@ class WelcomeView extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 30,
-                //  color: Colors.white,
               ),
             ),
             Padding(
@@ -39,7 +38,6 @@ class WelcomeView extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 28,
-                // color: Colors.white,
               ),
             ),
             const Text(
@@ -47,7 +45,6 @@ class WelcomeView extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                // color: Colors.white,
               ),
             ),
             const Text(
@@ -60,6 +57,8 @@ class WelcomeView extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             FilledButton(
+              style:
+                  FilledButton.styleFrom(backgroundColor: Colors.blueGrey[800]),
               onPressed: () {
                 context.read<AuthBloc>().add(
                       const AuthEventShouldRegister(),
@@ -71,6 +70,8 @@ class WelcomeView extends StatelessWidget {
               ),
             ),
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blueGrey[800]),
               onPressed: () {
                 context.read<AuthBloc>().add(
                       const AuthEventShouldLogIn(),

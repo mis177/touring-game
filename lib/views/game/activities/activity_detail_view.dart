@@ -36,7 +36,6 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
     return PopScope(
       onPopInvoked: (value) {
         argumentList[1]();
-        argumentList[2]();
       },
       child: BlocConsumer<GameBloc, GameState>(
         listener: (context, state) {
@@ -56,7 +55,9 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
             return const Text('');
           } else if (state is GameStateLoadedActivityDetails) {
             return Scaffold(
+              backgroundColor: Colors.grey[300],
               appBar: AppBar(
+                backgroundColor: Colors.grey[300],
                 title: Text(
                   activity.title,
                   style: const TextStyle(
@@ -72,9 +73,14 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                   child: Column(
                     children: [
                       Card(
+                        color: Colors.grey[200],
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
+                            Text(
+                              activity.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             Checkbox(
                               value: isDone,
                               onChanged: (bool? value) {
@@ -90,18 +96,18 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                                 setState(() {});
                               },
                             ),
-                            Text(
-                              activity.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Text('0/2'),
                           ],
                         ),
                       ),
                       const SizedBox(height: 15),
-                      Card(
-                        elevation: 10,
-                        child: state.activityImage,
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height / 2),
+                        //height: MediaQuery.of(context).size.height / 2,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: state.activityImage,
+                        ),
                       ),
                       const SizedBox(height: 15),
                       Container(

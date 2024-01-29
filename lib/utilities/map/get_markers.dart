@@ -31,34 +31,32 @@ List<MyMarker> getMarkers(
           showDialog(
               context: context,
               builder: (context) {
-                return PopScope(
-                  child: Dialog(
-                      child: SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.2,
-                    width: MediaQuery.of(context).size.width * 0.1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Center(
-                          child: Text(
-                            activity.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 25),
-                          ),
+                return Dialog(
+                    child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.2,
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Center(
+                        child: Text(
+                          activity.name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 25),
                         ),
-                        Text(activity.title),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pushNamed(
-                                openActivitityDetails,
-                                arguments: [activity, reloadMarkers]);
-                          },
-                          child: const Text('Open details'),
-                        )
-                      ],
-                    ),
-                  )),
-                );
+                      ),
+                      Text(activity.title),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(openActivitityDetails,
+                              arguments: [activity, reloadMarkers]);
+                        },
+                        child: const Text('Open details'),
+                      )
+                    ],
+                  ),
+                ));
               });
         },
         icon: activityIcon,
