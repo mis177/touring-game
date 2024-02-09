@@ -1,14 +1,19 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:touring_game/models/activity.dart';
+import 'package:touring_game/models/note.dart';
+import 'package:path/path.dart';
 
 class FirebaseCloudGameProvider {
   final placesList = FirebaseFirestore.instance.collection('places');
-  final instance = FirebaseStorage.instance.ref();
+  final storageInstance = FirebaseStorage.instance.ref();
 
   Future<String> getImage({required String path}) async {
-    var imageRef = instance.child(path);
+    var imageRef = storageInstance.child(path);
 
     return await imageRef.getDownloadURL();
   }
@@ -65,5 +70,90 @@ class FirebaseCloudGameProvider {
         .collection('activities_done')
         .doc(activity.id)
         .set({'done': activity.isDone});
+  }
+
+  Future<void> addActivityNote({required DatabaseNote note}) async {
+    var content = note.imagePath;
+    if (note.isImage) {
+      var imageFirestorePath = storageInstance.child(
+          "notes_images/${FirebaseAuth.instance.currentUser!.uid}/${basename(note.imagePath!)}");
+      try {
+        await imageFirestorePath.getDownloadURL();
+      } on FirebaseException catch (error) {
+        if (error.code == 'object-not-found') {
+          await imageFirestorePath.putFile(File(note.imagePath!));
+          note.imagePath = imageFirestorePath.fullPath;
+        }
+      }
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('activities_notes')
+        .doc(note.id)
+        .set({
+      'activity_id': note.activityId,
+      'color': note.color,
+      'id': note.id,
+      'content': content,
+      'position_x': note.positionX,
+      'position_y': note.positionY,
+      'is_image': note.isImage
+    });
+  }
+
+  Future<List<DatabaseNote>> getActivityNotes(
+      {required String activityId}) async {
+    List<DatabaseNote> notesList = [];
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('activities_notes')
+        .where('activity_id', isEqualTo: activityId)
+        .get()
+        .then((value) async {
+      for (var note in value.docs) {
+        var newNote = note.data();
+
+        var content = newNote['content'];
+
+        if (newNote['is_image']) {
+          try {
+            var imageFirestorePath = storageInstance.child(
+                "notes_images/${FirebaseAuth.instance.currentUser!.uid}/${basename(content)}");
+            var imageUrl = await imageFirestorePath.getDownloadURL();
+            // if path leads to Firebase Storage
+            content = Image.network(imageUrl);
+          } on FirebaseException catch (error) {
+            if (error.code == 'object-not-found') {
+              // if path is currently local
+              content = Image.file(File(content));
+            }
+          }
+        }
+
+        notesList.add(
+          DatabaseNote(
+              id: newNote['id'],
+              activityId: activityId,
+              content: content,
+              color: newNote['color'],
+              positionX: double.parse(newNote['position_x'].toString()),
+              positionY: double.parse(newNote['position_y'].toString()),
+              isImage: newNote['is_image'],
+              imagePath: newNote['content']),
+        );
+      }
+    });
+
+    return notesList;
+  }
+
+  Future<void> deleteImageFromStorage({required String imagePath}) async {
+    var imageFirestorePathRef = storageInstance.child(
+        "notes_images/${FirebaseAuth.instance.currentUser!.uid}/${basename(imagePath)}");
+    await imageFirestorePathRef.delete();
   }
 }

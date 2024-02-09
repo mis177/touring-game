@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:touring_game/models/activity.dart';
+import 'package:touring_game/models/note.dart';
 import 'package:touring_game/models/place.dart';
 
 sealed class GameEvent extends Equatable {
@@ -71,4 +72,44 @@ class GameEventSearchActivitiesFinished extends GameEvent {
 
   const GameEventSearchActivitiesFinished(
       {required this.finished, required this.value, required this.activities});
+}
+
+class GameEventLoadNotes extends GameEvent {
+  final String activityId;
+
+  const GameEventLoadNotes({
+    required this.activityId,
+  });
+  @override
+  List<Object?> get props => [activityId];
+}
+
+class GameEventAddNote extends GameEvent {
+  final DatabaseNote databaseNote;
+
+  const GameEventAddNote({
+    required this.databaseNote,
+  });
+  @override
+  List<Object?> get props => [databaseNote.id];
+}
+
+class GameEventUpdateNotes extends GameEvent {
+  final List<DatabaseNote> databaseNotes;
+
+  const GameEventUpdateNotes({
+    required this.databaseNotes,
+  });
+  @override
+  List<Object?> get props => [];
+}
+
+class GameEventDeleteImageFromStorage extends GameEvent {
+  final String imagePath;
+
+  const GameEventDeleteImageFromStorage({
+    required this.imagePath,
+  });
+  @override
+  List<Object?> get props => [imagePath];
 }

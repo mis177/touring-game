@@ -15,6 +15,7 @@ import 'package:touring_game/views/auth/register_view.dart';
 import 'package:touring_game/views/auth/start_view.dart';
 import 'package:touring_game/views/game/activities/activities_list_view.dart';
 import 'package:touring_game/views/game/activities/activity_detail_view.dart';
+import 'package:touring_game/views/game/activities/notes_view.dart';
 import 'package:touring_game/views/game/menu_view.dart';
 
 void main() {
@@ -22,9 +23,6 @@ void main() {
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
-      // theme: ThemeData(
-      //     //primarySwatch: Colors.blue,
-      //     ),
       home: BlocProvider<AuthBloc>(
         create: (context) => AuthBloc(AuthService.firebase()),
         child: const HomePage(),
@@ -32,6 +30,7 @@ void main() {
       routes: {
         openActivitiesList: (context) => const ActivitiesListBlocProvider(),
         openActivitityDetails: (context) => const ActivityDetailsBlocProvider(),
+        openUserNotes: (context) => const UserNotesBlocProvider(),
       },
       debugShowCheckedModeBanner: false,
     ),

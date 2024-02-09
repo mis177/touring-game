@@ -60,11 +60,13 @@ class _LoginViewState extends State<LoginView> {
                   child: Image.asset('lib/images/app_icon.png'),
                 ),
                 const SizedBox(height: 25),
-                const Text(
-                  'Touring app',
+                Text(
+                  'Visiter',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 40,
+                    color: Colors.blue[800],
                   ),
                 ),
                 const SizedBox(height: 50),

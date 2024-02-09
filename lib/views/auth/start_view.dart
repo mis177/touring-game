@@ -21,11 +21,13 @@ class WelcomeView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 120),
               child: Image.asset('lib/images/app_icon.png'),
             ),
-            const Text(
-              'Touring app',
+            Text(
+              'Visiter',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[800],
               ),
             ),
             Padding(
