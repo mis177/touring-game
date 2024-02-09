@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show Widget, immutable;
 import 'package:touring_game/models/activity.dart';
+import 'package:touring_game/models/note.dart';
 import 'package:touring_game/models/place.dart';
 
 @immutable
@@ -60,4 +61,34 @@ class GameStateLoadingActivityDetails extends GameState {
 class GameStateLoadedActivityDetails extends GameState {
   final Widget activityImage;
   const GameStateLoadedActivityDetails({required this.activityImage});
+}
+
+class GameStateLoadingNotes extends GameState {
+  final Exception? exception;
+  const GameStateLoadingNotes({
+    this.exception,
+    super.isLoading,
+    super.loadingText = null,
+  });
+}
+
+class GameStateLoadedNotes extends GameState {
+  final List<DatabaseNote> activityNotes;
+  const GameStateLoadedNotes({required this.activityNotes});
+}
+
+class GameStateUpdatingNotes extends GameState {
+  const GameStateUpdatingNotes();
+}
+
+class GameStateAddingNote extends GameState {
+  const GameStateAddingNote();
+}
+
+class GameStateUpdateNote extends GameState {
+  const GameStateUpdateNote();
+}
+
+class GameStateDeletingImageFromStorage extends GameState {
+  const GameStateDeletingImageFromStorage();
 }

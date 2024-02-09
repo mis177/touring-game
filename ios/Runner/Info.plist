@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Touring Game</string>
+	<string>Visiter</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>App needs camera access.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>App needs image library access.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>App needs microphone access.</string>
 </dict>
 </plist>

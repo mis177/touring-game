@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:touring_game/firebase_options.dart';
 
 import 'auth_user.dart';
@@ -46,8 +47,9 @@ class FirebaseAuthProvider implements AuthProvider {
     if (user != null) {
       try {
         String uid = user.uid;
-        FirebaseAuth.instance.currentUser!.uid;
         await user.delete();
+
+        //delete Firestore Database data
 
         await FirebaseFirestore.instance
             .collection('users')
@@ -60,7 +62,26 @@ class FirebaseAuthProvider implements AuthProvider {
           }
         });
 
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('activities_notes')
+            .get()
+            .then((snapshot) {
+          for (var doc in snapshot.docs) {
+            doc.reference.delete();
+          }
+        });
+
         await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+        //delete Firebase Storage data
+
+        final storageRef = FirebaseStorage.instance.ref("notes_images/$uid");
+        storageRef.listAll().then((value) => {
+              for (var element in value.items)
+                {FirebaseStorage.instance.ref(element.fullPath).delete()}
+            });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'requires-recent-login') {
           await logOut();
@@ -93,6 +114,7 @@ class FirebaseAuthProvider implements AuthProvider {
         password: password,
       );
       final user = currentUser;
+
       if (user != null) {
         return user;
       } else {

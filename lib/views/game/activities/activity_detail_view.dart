@@ -6,6 +6,7 @@ import 'package:touring_game/services/game/bloc/game_state.dart';
 import 'package:touring_game/services/game/game_provider.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/utilities/routes.dart';
 
 class ActivityDetailsBlocProvider extends StatelessWidget {
   const ActivityDetailsBlocProvider({super.key});
@@ -103,7 +104,6 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                       ConstrainedBox(
                         constraints: BoxConstraints(
                             maxHeight: MediaQuery.of(context).size.height / 2),
-                        //height: MediaQuery.of(context).size.height / 2,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: state.activityImage,
@@ -123,7 +123,10 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                 ),
               ),
               floatingActionButton: FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context)
+                      .pushNamed(openUserNotes, arguments: [activity]);
+                },
                 child: const Icon(Icons.menu_book),
               ),
             );

@@ -11,7 +11,7 @@ import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 class ProfileInfoView extends StatefulWidget {
   const ProfileInfoView({super.key, required this.activitiesDone});
 
-  final activitiesDone;
+  final String? activitiesDone;
 
   @override
   State<ProfileInfoView> createState() => _ProfileInfoViewState();
@@ -92,7 +92,7 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
                           const Text(
                             'Email:',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 32),
+                                fontWeight: FontWeight.bold, fontSize: 28),
                           ),
                           Text(
                             state.userMail!,
@@ -104,7 +104,7 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
                             style: TextStyle(fontSize: 25),
                           ),
                           Text(
-                            widget.activitiesDone,
+                            widget.activitiesDone!,
                             style: const TextStyle(
                                 fontSize: 20, color: Colors.green),
                           ),

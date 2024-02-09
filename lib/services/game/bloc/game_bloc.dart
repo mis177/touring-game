@@ -11,6 +11,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   GameBloc(FirebaseCloudGameService service)
       : super(const GameStateUninitialized(isLoading: true)) {
     on<GameEventLoadPlaces>((event, emit) async {
+      service.activityNotes = [];
       if (service.places.isEmpty) {
         emit(const GameStateLoadingPlaces(
             isLoading: true, loadingText: 'Loading places'));
@@ -22,6 +23,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           ));
         }
       }
+
       emit(GameStateLoadedPlaces(
           placesList: service.places, activitiesList: service.allActivities));
     });
@@ -103,6 +105,41 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
       emit(GameStateLoadedActivities(
           activitiesList: searchedActivities as List<DatabaseActivity>));
+    });
+
+    on<GameEventLoadNotes>((event, emit) async {
+      emit(const GameStateLoadingNotes(
+          isLoading: true, loadingText: 'Loading notes'));
+
+      if (service.activityNotes.isEmpty) {
+        await service.getActivityNotes(activityId: event.activityId);
+      }
+
+      emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
+    });
+
+    on<GameEventAddNote>((event, emit) async {
+      emit(const GameStateAddingNote());
+
+      service.activityNotes.add(event.databaseNote);
+      emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
+    });
+
+    on<GameEventUpdateNotes>((event, emit) async {
+      emit(const GameStateUpdatingNotes());
+
+      for (var note in event.databaseNotes) {
+        await service.addActivityNote(note: note);
+      }
+      service.activityNotes = [];
+
+      emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
+    });
+
+    on<GameEventDeleteImageFromStorage>((event, emit) async {
+      emit(const GameStateDeletingImageFromStorage());
+      await service.deleteImageFromStorage(imagePath: event.imagePath);
+      emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
     });
   }
 }
