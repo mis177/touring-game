@@ -73,8 +73,9 @@ class FirebaseCloudGameProvider {
   }
 
   Future<void> addActivityNote({required DatabaseNote note}) async {
-    var content = note.imagePath;
+    String content = '';
     if (note.isImage) {
+      content = note.imagePath!;
       var imageFirestorePath = storageInstance.child(
           "notes_images/${FirebaseAuth.instance.currentUser!.uid}/${basename(note.imagePath!)}");
       try {
@@ -85,6 +86,8 @@ class FirebaseCloudGameProvider {
           note.imagePath = imageFirestorePath.fullPath;
         }
       }
+    } else {
+      content = note.content;
     }
 
     await FirebaseFirestore.instance
