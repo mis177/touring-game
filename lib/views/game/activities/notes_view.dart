@@ -40,8 +40,6 @@ class _UserNotesState extends State<UserNotes> {
 
   List<GlobalKey<State<StatefulWidget>>> globalKeys = [];
 
-  final String imagePathPrefix = 'dggf.;hb,fghdfpsdf;';
-
   @override
   void initState() {
     notesTextController = TextEditingController();

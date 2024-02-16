@@ -43,7 +43,7 @@ class _ActivitiesListState extends State<ActivitiesList> {
     final argumentList = ModalRoute.of(context)!.settings.arguments as List;
     final activities = argumentList[0];
     filteredActivities = activities;
-    return BlocConsumer<GameBloc, GameState>(
+    return BlocListener<GameBloc, GameState>(
       listener: (context, state) {
         if (state.isLoading) {
           LoadingScreen().show(
@@ -57,123 +57,120 @@ class _ActivitiesListState extends State<ActivitiesList> {
           filteredActivities = state.activitiesList;
         }
       },
-      builder: (context, state) {
-        return Scaffold(
-            backgroundColor: Colors.grey[300],
-            appBar: AppBar(
-              backgroundColor: Colors.grey[300],
-              centerTitle: true,
-              title: const Text('Activities list',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
+      child: Scaffold(
+        backgroundColor: Colors.grey[300],
+        appBar: AppBar(
+          backgroundColor: Colors.grey[300],
+          centerTitle: true,
+          title: const Text('Activities list',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Search',
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    )),
+                onChanged: (value) {
+                  context.read<GameBloc>().add(
+                        GameEventSearchActivitiesText(
+                            text: value, activities: activities),
+                      );
+                },
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
-                        hintText: 'Search',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        )),
-                    onChanged: (value) {
-                      context.read<GameBloc>().add(
-                            GameEventSearchActivitiesText(
-                                text: value, activities: activities),
-                          );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 5.0),
-                          child: getFilterButton(
-                            clickedThis: unfinishedActivitiesSort,
-                            clickedOther: finishedActivitiesSort,
-                            function: () {
-                              unfinishedActivitiesSort =
-                                  !unfinishedActivitiesSort;
-                              if (unfinishedActivitiesSort) {
-                                finishedActivitiesSort = false;
-                              }
-                              context.read<GameBloc>().add(
-                                    GameEventSearchActivitiesFinished(
-                                        finished: false,
-                                        activities: activities,
-                                        value: unfinishedActivitiesSort),
-                                  );
-                            },
-                            text: 'Unfinished',
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 5.0),
-                          child: getFilterButton(
-                            clickedThis: finishedActivitiesSort,
-                            clickedOther: unfinishedActivitiesSort,
-                            function: () {
-                              finishedActivitiesSort = !finishedActivitiesSort;
-                              if (finishedActivitiesSort) {
-                                unfinishedActivitiesSort = false;
-                              }
-                              context.read<GameBloc>().add(
-                                    GameEventSearchActivitiesFinished(
-                                        finished: true,
-                                        activities: activities,
-                                        value: finishedActivitiesSort),
-                                  );
-                            },
-                            text: 'Finished',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   Expanded(
-                    child: ListView.builder(
-                        itemCount: filteredActivities.length,
-                        itemBuilder: (ctx, index) {
-                          Color activityColor = Colors.black;
-                          if (filteredActivities[index].isDone) {
-                            activityColor = Colors.green;
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 5.0),
+                      child: getFilterButton(
+                        clickedThis: unfinishedActivitiesSort,
+                        clickedOther: finishedActivitiesSort,
+                        function: () {
+                          unfinishedActivitiesSort = !unfinishedActivitiesSort;
+                          if (unfinishedActivitiesSort) {
+                            finishedActivitiesSort = false;
                           }
-                          return Card(
-                              color: Colors.grey[100],
-                              shadowColor: activityColor,
-                              child: ListTile(
-                                leading: const Icon(Icons.attractions),
-                                title: Text(
-                                  style: TextStyle(color: activityColor),
-                                  filteredActivities[index].name,
-                                  maxLines: 1,
-                                  softWrap: true,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () {
-                                  Navigator.of(context).pushNamed(
-                                      openActivitityDetails,
-                                      arguments: [
-                                        filteredActivities[index],
-                                        reloadList,
-                                        argumentList[1],
-                                      ]);
-                                },
-                              ));
-                        }),
+                          context.read<GameBloc>().add(
+                                GameEventSearchActivitiesFinished(
+                                    finished: false,
+                                    activities: activities,
+                                    value: unfinishedActivitiesSort),
+                              );
+                        },
+                        text: 'Unfinished',
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0),
+                      child: getFilterButton(
+                        clickedThis: finishedActivitiesSort,
+                        clickedOther: unfinishedActivitiesSort,
+                        function: () {
+                          finishedActivitiesSort = !finishedActivitiesSort;
+                          if (finishedActivitiesSort) {
+                            unfinishedActivitiesSort = false;
+                          }
+                          context.read<GameBloc>().add(
+                                GameEventSearchActivitiesFinished(
+                                    finished: true,
+                                    activities: activities,
+                                    value: finishedActivitiesSort),
+                              );
+                        },
+                        text: 'Finished',
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ));
-      },
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: filteredActivities.length,
+                    itemBuilder: (ctx, index) {
+                      Color activityColor = Colors.black;
+                      if (filteredActivities[index].isDone) {
+                        activityColor = Colors.green;
+                      }
+                      return Card(
+                          color: Colors.grey[100],
+                          shadowColor: activityColor,
+                          child: ListTile(
+                            leading: const Icon(Icons.attractions),
+                            title: Text(
+                              style: TextStyle(color: activityColor),
+                              filteredActivities[index].name,
+                              maxLines: 1,
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pushNamed(openActivitityDetails, arguments: [
+                                filteredActivities[index],
+                                reloadList,
+                                argumentList[1],
+                              ]);
+                            },
+                          ));
+                    }),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

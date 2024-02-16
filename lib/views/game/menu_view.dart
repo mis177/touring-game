@@ -38,6 +38,14 @@ class _MenuView extends State<MenuView> {
   String _scaffoldText = 'Places list';
   bool placesLoaded = false;
 
+  @override
+  void initState() {
+    context.read<GameBloc>().add(
+          const GameEventLoadPlaces(),
+        );
+    super.initState();
+  }
+
   void _onMenuItemTapped(int index) {
     switch (index) {
       case 0:
@@ -67,10 +75,6 @@ class _MenuView extends State<MenuView> {
 
   @override
   Widget build(BuildContext context) {
-    context.read<GameBloc>().add(
-          const GameEventLoadPlaces(),
-        );
-
     return BlocBuilder<GameBloc, GameState>(
       builder: (context, state) {
         Widget bottomNawigation;

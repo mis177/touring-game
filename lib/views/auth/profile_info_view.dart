@@ -29,144 +29,130 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) async {
-        if (state is AuthStateEmailSent) {
-          if (state.exception != null) {
-            if (state.exception is UserNotFoundException) {
-              await showCustomDialog(
-                  context: context, title: 'Error', text: 'Email not found');
-            } else {
-              await showCustomDialog(
-                  context: context,
-                  title: 'Error',
-                  text: 'We could not proceed');
-            }
+    return BlocConsumer<AuthBloc, AuthState>(listener: (context, state) async {
+      if (state is AuthStateEmailSent) {
+        if (state.exception != null) {
+          if (state.exception is UserNotFoundException) {
+            await showCustomDialog(
+                context: context, title: 'Error', text: 'Email not found');
           } else {
-            showSnackBar('Password reset email was sent to you');
+            await showCustomDialog(
+                context: context, title: 'Error', text: 'We could not proceed');
           }
-        } else if (state is AuthStateUserDeleting) {
-          if (state.exception != null) {
-            if (state.exception is RequiresRecentLoginAuthException) {
-              await showCustomDialog(
-                  context: context, title: 'Error', text: 'You need to relog');
-            } else {
-              await showCustomDialog(
-                  context: context,
-                  title: 'Error',
-                  text: 'We could not proceed');
-            }
-          } else if (state.isLoading) {
-            LoadingScreen().show(
-                context: context,
-                text: state.loadingText ?? 'Please wait a moment');
-          } else {
-            LoadingScreen().hide();
-          }
+        } else {
+          showSnackBar('Password reset email was sent to you');
         }
-      },
-      builder: (context, state) {
-        if (state is AuthStateLoggedIn ||
-            state is AuthStateEmailSent ||
-            state is AuthStateUserDeletedError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Card(
-                    color: Colors.grey[100],
-                    child: Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        children: [
-                          IconButton.filled(
-                            icon: const Icon(
-                              Icons.person,
-                              size: 80,
-                            ),
-                            onPressed: () {},
-                          ),
-                          const SizedBox(height: 25),
-                          const Text(
-                            'Email:',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 28),
-                          ),
-                          Text(
-                            state.userMail!,
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                          const SizedBox(height: 40),
-                          const Text(
-                            'Your activities status:',
-                            style: TextStyle(fontSize: 25),
-                          ),
-                          Text(
-                            widget.activitiesDone!,
-                            style: const TextStyle(
-                                fontSize: 20, color: Colors.green),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Keep up good work!',
-                            style: TextStyle(fontSize: 20, color: Colors.red),
-                          ),
-                        ],
+      } else if (state is AuthStateUserDeleting) {
+        if (state.exception != null) {
+          if (state.exception is RequiresRecentLoginAuthException) {
+            await showCustomDialog(
+                context: context, title: 'Error', text: 'You need to relog');
+          } else {
+            await showCustomDialog(
+                context: context, title: 'Error', text: 'We could not proceed');
+          }
+        } else if (state.isLoading) {
+          LoadingScreen().show(
+              context: context,
+              text: state.loadingText ?? 'Please wait a moment');
+        } else {
+          LoadingScreen().hide();
+        }
+      }
+    }, builder: (context, state) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Card(
+                color: Colors.grey[100],
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Column(
+                    children: [
+                      IconButton.filled(
+                        icon: const Icon(
+                          Icons.person,
+                          size: 80,
+                        ),
+                        onPressed: () {},
+                      ),
+                      const SizedBox(height: 25),
+                      const Text(
+                        'Email:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 28),
+                      ),
+                      Text(
+                        state.userMail!,
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                      const SizedBox(height: 40),
+                      const Text(
+                        'Your activities status:',
+                        style: TextStyle(fontSize: 25),
+                      ),
+                      Text(
+                        widget.activitiesDone!,
+                        style:
+                            const TextStyle(fontSize: 20, color: Colors.green),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Keep up good work!',
+                        style: TextStyle(fontSize: 20, color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<AuthBloc>().add(
+                              const AuthEventChangePassword(),
+                            );
+                      },
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 2,
+                        child: const Center(child: Text('Reset password')),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
+                    const SizedBox(height: 15),
+                    ElevatedButton(
+                        onPressed: () async {
+                          final shouldDeleteUser = await showLogoutDialog(
+                              context: context,
+                              title: 'Delete',
+                              text: 'Are you sure you want to delete account?');
+                          if (shouldDeleteUser == true) {
+                            // ignore: use_build_context_synchronously
                             context.read<AuthBloc>().add(
-                                  const AuthEventChangePassword(),
+                                  const AuthEventDeleteUser(),
                                 );
-                          },
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width / 2,
-                            child: const Center(child: Text('Reset password')),
+                          }
+                        },
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 2,
+                          child: const Center(
+                            child: Text(
+                              'Delete account',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 15),
-                        ElevatedButton(
-                            onPressed: () async {
-                              final shouldDeleteUser = await showLogoutDialog(
-                                  context: context,
-                                  title: 'Delete',
-                                  text:
-                                      'Are you sure you want to delete account?');
-                              if (shouldDeleteUser == true) {
-                                // ignore: use_build_context_synchronously
-                                context.read<AuthBloc>().add(
-                                      const AuthEventDeleteUser(),
-                                    );
-                              }
-                            },
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width / 2,
-                              child: const Center(
-                                child: Text(
-                                  'Delete account',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            )),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        } else {
-          return const Text('');
-        }
-      },
-    );
+                        )),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
