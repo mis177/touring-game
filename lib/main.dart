@@ -5,9 +5,13 @@ import 'package:touring_game/services/auth/auth_service.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
+import 'package:touring_game/services/theme/bloc/theme_bloc.dart';
+import 'package:touring_game/services/theme/bloc/theme_event.dart';
+import 'package:touring_game/services/theme/bloc/theme_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 import 'package:touring_game/utilities/routes.dart';
+import 'package:touring_game/utilities/theme/themes.dart';
 import 'package:touring_game/views/auth/email_verify_view.dart';
 import 'package:touring_game/views/auth/login_view.dart';
 import 'package:touring_game/views/auth/password_forgot_view.dart';
@@ -21,19 +25,29 @@ import 'package:touring_game/views/game/menu_view.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    MaterialApp(
-      title: 'Flutter Demo',
-      home: BlocProvider<AuthBloc>(
-        create: (context) => AuthBloc(AuthService.firebase()),
-        child: const HomePage(),
-      ),
-      routes: {
-        openActivitiesList: (context) => const ActivitiesListBlocProvider(),
-        openActivitityDetails: (context) => const ActivityDetailsBlocProvider(),
-        openUserNotes: (context) => const UserNotesBlocProvider(),
-      },
-      debugShowCheckedModeBanner: false,
-    ),
+    BlocProvider(
+        create: (context) =>
+            ThemeBloc()..add(const ThemeEventInitializeTheme()),
+        child: BlocBuilder<ThemeBloc, ThemeState>(
+          builder: (context, state) {
+            return MaterialApp(
+              theme: state.themeData,
+              title: 'Visiter',
+              home: BlocProvider<AuthBloc>(
+                create: (context) => AuthBloc(AuthService.firebase()),
+                child: const HomePage(),
+              ),
+              routes: {
+                openActivitiesList: (context) =>
+                    const ActivitiesListBlocProvider(),
+                openActivitityDetails: (context) =>
+                    const ActivityDetailsBlocProvider(),
+                openUserNotes: (context) => const UserNotesBlocProvider(),
+              },
+              debugShowCheckedModeBanner: false,
+            );
+          },
+        )),
   );
 }
 

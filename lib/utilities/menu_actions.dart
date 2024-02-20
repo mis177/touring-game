@@ -1,1 +1,1 @@
-enum MenuAction { changeLaguage, about, logout }
+enum MenuAction { about, logout }

@@ -147,11 +147,8 @@ class _UserNotesState extends State<UserNotes> {
           }
 
           return Scaffold(
-            backgroundColor: Colors.grey[300],
             appBar: AppBar(
-              backgroundColor: Colors.grey[300],
               title: Text(activity.name),
-              centerTitle: true,
             ),
             body: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -163,7 +160,7 @@ class _UserNotesState extends State<UserNotes> {
                           'lib/images/pin_board.jpg',
                         ),
                         fit: BoxFit.cover),
-                    border: Border.all(width: 5, color: Colors.black54),
+                    border: Border.all(width: 5),
                   ),
                   child: Stack(
                     children: widgetList,

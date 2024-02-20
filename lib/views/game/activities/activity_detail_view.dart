@@ -60,9 +60,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
           activityImage = state.activityImage;
         }
         return Scaffold(
-          backgroundColor: Colors.grey[300],
           appBar: AppBar(
-            backgroundColor: Colors.grey[300],
             title: Text(
               activity.title,
               style: const TextStyle(
@@ -78,7 +76,6 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
               child: Column(
                 children: [
                   Card(
-                    color: Colors.grey[200],
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -115,10 +112,13 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                   ),
                   const SizedBox(height: 15),
                   Container(
-                    color: Colors.amber[50],
-                    child: Text(
-                      activity.description,
-                      textAlign: TextAlign.justify,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        activity.description,
+                        textAlign: TextAlign.justify,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 60),

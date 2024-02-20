@@ -39,7 +39,7 @@ class LoadingScreen {
       //opaque: true,
       builder: (context) {
         return Material(
-          color: Colors.grey.withAlpha(150),
+          color: Theme.of(context).colorScheme.surface.withAlpha(150),
           child: Center(
             child: Container(
               constraints: BoxConstraints(
@@ -48,7 +48,7 @@ class LoadingScreen {
                 minWidth: size.width * 0.5,
               ),
               decoration: BoxDecoration(
-                color: Colors.blueGrey[100]!.withAlpha(250),
+                color: Theme.of(context).colorScheme.background,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Padding(

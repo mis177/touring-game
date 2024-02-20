@@ -60,7 +60,6 @@ class _PlacesListState extends State<PlacesList> {
 
           if (allPlaces.isEmpty) allPlaces = state.placesList;
           return Scaffold(
-            backgroundColor: Colors.grey[300],
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -72,7 +71,6 @@ class _PlacesListState extends State<PlacesList> {
                         prefixIcon: const Icon(Icons.search),
                         hintText: 'Search',
                         filled: true,
-                        fillColor: Colors.grey[100],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         )),
@@ -97,43 +95,42 @@ class _PlacesListState extends State<PlacesList> {
                                   element.placeId ==
                                   state.placesList[index].id);
                           return Card(
-                              color: Colors.grey[100],
                               child: ListTile(
-                                leading: const Icon(Icons.place_outlined),
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      state.placesList[index].name,
-                                      maxLines: 1,
-                                      softWrap: true,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      '${placeActivities.where((element) => element.isDone == true).length}/${placeActivities.length}',
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
-                                  ],
+                            leading: const Icon(Icons.place_outlined),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  state.placesList[index].name,
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                trailing: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[900],
-                                  ),
-                                  child: const Icon(
-                                    Icons.navigate_next_outlined,
-                                    color: Colors.white,
-                                  ),
+                                Text(
+                                  '${placeActivities.where((element) => element.isDone == true).length}/${placeActivities.length}',
+                                  style: const TextStyle(fontSize: 13),
                                 ),
-                                onTap: () {
-                                  context.read<GameBloc>().add(
-                                        GameEventLoadActivities(
-                                            placeId:
-                                                state.placesList[index].id),
-                                      );
-                                },
-                              ));
+                              ],
+                            ),
+                            trailing: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
+                              ),
+                              child: Icon(Icons.navigate_next_outlined,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer),
+                            ),
+                            onTap: () {
+                              context.read<GameBloc>().add(
+                                    GameEventLoadActivities(
+                                        placeId: state.placesList[index].id),
+                                  );
+                            },
+                          ));
                         }),
                   ),
                 ),
@@ -178,7 +175,6 @@ class _PlacesListState extends State<PlacesList> {
                         itemCount: randomActivities.length,
                         itemBuilder: (ctx, index) {
                           return Card(
-                            color: Colors.grey[100],
                             child: SizedBox(
                               width: 200,
                               child: Center(

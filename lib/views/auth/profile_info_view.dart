@@ -4,9 +4,12 @@ import 'package:touring_game/services/auth/auth_exceptions.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
+import 'package:touring_game/services/theme/bloc/theme_bloc.dart';
+import 'package:touring_game/services/theme/bloc/theme_event.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 import 'package:touring_game/utilities/dialogs/logout_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/utilities/theme/themes.dart';
 
 class ProfileInfoView extends StatefulWidget {
   const ProfileInfoView({super.key, required this.activitiesDone});
@@ -18,6 +21,7 @@ class ProfileInfoView extends StatefulWidget {
 }
 
 class _ProfileInfoViewState extends State<ProfileInfoView> {
+  bool themeSwitch = true;
   void showSnackBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -60,6 +64,9 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
         }
       }
     }, builder: (context, state) {
+      if (BlocProvider.of<ThemeBloc>(context).state.themeData == lightTheme) {
+        themeSwitch = false;
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -67,7 +74,6 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Card(
-                color: Colors.grey[100],
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Column(
@@ -109,9 +115,19 @@ class _ProfileInfoViewState extends State<ProfileInfoView> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(30.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
                   children: [
+                    const Text('App Theme'),
+                    Switch(
+                        value: themeSwitch,
+                        onChanged: (bool value) {
+                          setState(() {
+                            themeSwitch = value;
+                            BlocProvider.of<ThemeBloc>(context)
+                                .add(ThemeEventChangeTheme(value));
+                          });
+                        }),
                     ElevatedButton(
                       onPressed: () {
                         context.read<AuthBloc>().add(

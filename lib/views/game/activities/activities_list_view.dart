@@ -58,9 +58,7 @@ class _ActivitiesListState extends State<ActivitiesList> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.grey[300],
         appBar: AppBar(
-          backgroundColor: Colors.grey[300],
           centerTitle: true,
           title: const Text('Activities list',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
@@ -74,7 +72,6 @@ class _ActivitiesListState extends State<ActivitiesList> {
                     prefixIcon: const Icon(Icons.search),
                     hintText: 'Search',
                     filled: true,
-                    fillColor: Colors.grey[100],
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     )),
@@ -140,12 +137,12 @@ class _ActivitiesListState extends State<ActivitiesList> {
                 child: ListView.builder(
                     itemCount: filteredActivities.length,
                     itemBuilder: (ctx, index) {
-                      Color activityColor = Colors.black;
+                      Color activityColor =
+                          Theme.of(context).colorScheme.onSurface;
                       if (filteredActivities[index].isDone) {
                         activityColor = Colors.green;
                       }
                       return Card(
-                          color: Colors.grey[100],
                           shadowColor: activityColor,
                           child: ListTile(
                             leading: const Icon(Icons.attractions),

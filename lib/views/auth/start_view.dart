@@ -26,7 +26,7 @@ class WelcomeView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue[800],
+                color: Theme.of(context).colorScheme.tertiaryContainer,
               ),
             ),
             Padding(
@@ -58,8 +58,6 @@ class WelcomeView extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             FilledButton(
-              style:
-                  FilledButton.styleFrom(backgroundColor: Colors.blueGrey[800]),
               onPressed: () {
                 context.read<AuthBloc>().add(
                       const AuthEventShouldRegister(),
@@ -71,8 +69,6 @@ class WelcomeView extends StatelessWidget {
               ),
             ),
             OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blueGrey[800]),
               onPressed: () {
                 context.read<AuthBloc>().add(
                       const AuthEventShouldLogIn(),

@@ -36,7 +36,7 @@ class MenuView extends StatefulWidget {
 class _MenuView extends State<MenuView> {
   int _selectedIndex = 0;
   String _scaffoldText = 'Places list';
-  bool placesLoaded = false;
+  bool themeSwitch = true;
 
   @override
   void initState() {
@@ -89,20 +89,13 @@ class _MenuView extends State<MenuView> {
           bottomNawigation = bottomNavigationWidgets();
         }
 
-        placesLoaded = true;
         return Scaffold(
-            backgroundColor: Colors.grey[300],
             appBar: AppBar(
-              backgroundColor: Colors.grey[300],
-              centerTitle: true,
               title: Text(
                 _scaffoldText,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
               ),
               actions: [
                 PopupMenuButton<MenuAction>(
-                  color: Colors.grey[50],
                   onSelected: (value) async {
                     switch (value) {
                       case MenuAction.logout:
@@ -116,8 +109,6 @@ class _MenuView extends State<MenuView> {
                                 const AuthEventLogOut(),
                               );
                         }
-                        break;
-                      case MenuAction.changeLaguage:
                         break;
 
                       case MenuAction.about:
@@ -144,7 +135,6 @@ class _MenuView extends State<MenuView> {
               ],
             ),
             bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: Colors.grey[200],
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.list_alt),
@@ -160,7 +150,6 @@ class _MenuView extends State<MenuView> {
                 ),
               ],
               currentIndex: _selectedIndex,
-              selectedItemColor: Colors.amber[800],
               onTap: _onMenuItemTapped,
             ),
             body: bottomNawigation);

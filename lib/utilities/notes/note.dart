@@ -59,13 +59,10 @@ class _ActivityNoteState extends State<ActivityNote> {
       contents = Text(
         widget.databaseNote.content,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-            fontStyle: FontStyle.italic, fontSize: 16, color: Colors.black),
+        style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 16),
       );
     } else if (widget.databaseNote.isImage == true) {
       contents = widget.databaseNote.content;
-
-      noteColor = Colors.cyan[50]!;
     }
     return Positioned(
       left: position.dx - containerPosition.dx - 5,
