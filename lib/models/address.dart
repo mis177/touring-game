@@ -1,23 +1,20 @@
+import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart' as lat_lng;
 
-class AddressModel {
+class AddressModel extends Equatable {
   final String name;
   final lat_lng.LatLng coords;
 
-  AddressModel({required this.name, required this.coords});
+  const AddressModel({required this.name, required this.coords});
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'display_name': String name,
-        'lat': String lat,
-        'lon': String lon,
-      } =>
-        AddressModel(
-          name: name,
-          coords: lat_lng.LatLng(double.parse(lat), double.parse(lon)),
-        ),
-      _ => throw const FormatException('Failed to load address.'),
-    };
+    return AddressModel(
+      name: json['display_name'],
+      coords:
+          lat_lng.LatLng(double.parse(json['lat']), double.parse(json['lon'])),
+    );
   }
+
+  @override
+  List<Object?> get props => [name, coords.latitude, coords.longitude];
 }

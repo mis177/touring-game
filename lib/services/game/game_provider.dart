@@ -47,16 +47,8 @@ class FirebaseCloudGameProvider {
             .then((value) => isDone = value.data()?['done'] ?? false);
         var databaseData = activity.data();
 
-        activitiesList.add(DatabaseActivity(
-          name: databaseData['name'],
-          id: activity.id,
-          imagePath: databaseData['image_path'] ?? '',
-          isDone: isDone,
-          title: databaseData['title'] ?? '',
-          description: databaseData['description'] ?? '',
-          coords: databaseData['coords'],
-          placeId: placeId,
-        ));
+        activitiesList.add(DatabaseActivity.fromJson(
+            databaseData, placeId, activity.id, isDone));
       }
     });
 
@@ -122,6 +114,7 @@ class FirebaseCloudGameProvider {
 
         var content = newNote['content'];
 
+        //check if note content is String or Image and get it
         if (newNote['is_image']) {
           try {
             var imageFirestorePath = storageInstance.child(
@@ -137,17 +130,7 @@ class FirebaseCloudGameProvider {
           }
         }
 
-        notesList.add(
-          DatabaseNote(
-              id: newNote['id'],
-              activityId: activityId,
-              content: content,
-              color: newNote['color'],
-              positionX: double.parse(newNote['position_x'].toString()),
-              positionY: double.parse(newNote['position_y'].toString()),
-              isImage: newNote['is_image'],
-              imagePath: newNote['content']),
-        );
+        notesList.add(DatabaseNote.fromJson(newNote, content, activityId));
       }
     });
 
