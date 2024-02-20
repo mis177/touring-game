@@ -7,7 +7,6 @@ ElevatedButton getFilterButton(
     required function}) {
   return ElevatedButton(
     style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all(Colors.grey[200]),
       elevation: MaterialStateProperty.resolveWith<double?>(
           (Set<MaterialState> states) {
         if (clickedThis) {

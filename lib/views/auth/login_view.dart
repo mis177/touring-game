@@ -66,7 +66,7 @@ class _LoginViewState extends State<LoginView> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 40,
-                    color: Colors.blue[800],
+                    color: Theme.of(context).colorScheme.tertiaryContainer,
                   ),
                 ),
                 const SizedBox(height: 50),
@@ -89,7 +89,6 @@ class _LoginViewState extends State<LoginView> {
                     alignLabelWithHint: true,
                     labelText: 'Enter your email',
                     filled: true,
-                    fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -119,7 +118,6 @@ class _LoginViewState extends State<LoginView> {
                     prefixIcon: const Icon(Icons.lock),
                     labelText: 'Enter your password',
                     filled: true,
-                    fillColor: Colors.white,
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -134,16 +132,13 @@ class _LoginViewState extends State<LoginView> {
                               const AuthEventForgotPassword(),
                             );
                       },
-                      child: Text(
+                      child: const Text(
                         'Forgot password',
-                        style: TextStyle(color: Colors.blueGrey[800]),
                       ),
                     ),
                   ],
                 ),
                 FilledButton(
-                  style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blueGrey[800]),
                   onPressed: () async {
                     final email = _email.text;
                     final password = _password.text;
@@ -170,13 +165,14 @@ class _LoginViewState extends State<LoginView> {
                     TextSpan(
                       children: <TextSpan>[
                         const TextSpan(
-                            text: 'Not registered? ',
-                            style: TextStyle(color: Colors.black)),
+                          text: 'Not registered? ',
+                        ),
                         TextSpan(
                           text: 'Sign Up',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.lightBlue[300],
+                            color:
+                                Theme.of(context).colorScheme.tertiaryContainer,
                           ),
                         ),
                       ],

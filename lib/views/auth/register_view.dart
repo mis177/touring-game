@@ -85,7 +85,7 @@ class _RegisterViewState extends State<RegisterView> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 40,
-                    color: Colors.blue[800],
+                    color: Theme.of(context).colorScheme.tertiaryContainer,
                   ),
                 ),
                 const SizedBox(height: 50),
@@ -108,7 +108,6 @@ class _RegisterViewState extends State<RegisterView> {
                     alignLabelWithHint: true,
                     labelText: 'Enter your email',
                     filled: true,
-                    fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -138,7 +137,6 @@ class _RegisterViewState extends State<RegisterView> {
                     labelText: 'Enter your password',
                     prefixIcon: const Icon(Icons.lock),
                     filled: true,
-                    fillColor: Colors.white,
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -157,7 +155,6 @@ class _RegisterViewState extends State<RegisterView> {
                         wrongConfirmation ? 'Passwords don\'t match ' : null,
                     prefixIcon: const Icon(Icons.lock),
                     filled: true,
-                    fillColor: Colors.white,
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -165,8 +162,6 @@ class _RegisterViewState extends State<RegisterView> {
                 ),
                 const SizedBox(height: 48),
                 FilledButton(
-                  style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blueGrey[800]),
                   onPressed: () async {
                     final email = _email.text;
                     final password = _password.text;
@@ -201,13 +196,14 @@ class _RegisterViewState extends State<RegisterView> {
                     TextSpan(
                       children: <TextSpan>[
                         const TextSpan(
-                            text: 'Already registered? ',
-                            style: TextStyle(color: Colors.black)),
+                          text: 'Already registered? ',
+                        ),
                         TextSpan(
                           text: ' Log in',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.lightBlue[300],
+                            color:
+                                Theme.of(context).colorScheme.tertiaryContainer,
                           ),
                         ),
                       ],

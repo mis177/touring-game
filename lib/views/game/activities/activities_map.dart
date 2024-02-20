@@ -45,6 +45,7 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
   MapController mapController = MapController();
   List<AddressModel> searchResults = [];
   List<MyMarker> mapMarkers = [];
+  TextEditingController addressSearchController = TextEditingController();
   CurrentLocationLayer locationLayer = CurrentLocationLayer();
   bool unfinishedActivitiesSort = false;
 
@@ -52,6 +53,12 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
 
   void refreshWidget() {
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    addressSearchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -109,12 +116,13 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
               child: Column(
                 children: [
                   TextField(
+                    controller: addressSearchController,
                     onTapOutside: (event) {
+                      addressSearchController.clear();
                       FocusManager.instance.primaryFocus?.unfocus();
                     },
                     decoration: InputDecoration(
                         filled: true,
-                        fillColor: Colors.white,
                         prefixIcon: const Icon(Icons.search),
                         hintText: 'Search address',
                         border: OutlineInputBorder(
@@ -216,9 +224,13 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
                                         border: Border.all(
-                                          color: Colors.grey,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondaryContainer,
                                         ),
                                         borderRadius: const BorderRadius.all(
                                             Radius.circular(20))),
