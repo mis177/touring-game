@@ -43,6 +43,6 @@ Dark mode example:
 
 
 # TODO:
-Add splash screen and app icon. Add Internationalizing, tests
+Add Internationalizing, tests
 
 
