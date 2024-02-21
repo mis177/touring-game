@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,7 +12,8 @@ FlutterMap loadMap(
     {required MapController mapController,
     required Position? currentLocation,
     required CurrentLocationLayer locationLayer,
-    required List<MyMarker> mapMarkers}) {
+    required List<MyMarker> mapMarkers,
+    required Widget Function(BuildContext, Widget, TileImage)? darkMode}) {
   return FlutterMap(
       mapController: mapController,
       options: MapOptions(
@@ -25,6 +27,7 @@ FlutterMap loadMap(
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          tileBuilder: darkMode, //darkModeTileBuilder,
           maxNativeZoom: 20,
           minNativeZoom: 4,
         ),
