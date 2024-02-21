@@ -4,6 +4,7 @@ Implemented location search functionality (OSM API Search).
 
 NEW UPDATE
 Added 'sticky notes' functionality. Every activity has its own board for notes and memories. It supports text and image notes, which can be places anywhere on the board. Notes and images are saved in Firebase. On tap note is displayed in the middle of screen with zoom funcion.
+Added light/dark theme switch, settings are saved with shared_preferences package.
 
 # Screens
 
@@ -32,6 +33,8 @@ Notes:
 ![obraz](https://github.com/mis177/touring-game/assets/56123042/172fbfe1-51be-4032-81ee-52d186d3bde9) ![obraz](https://github.com/mis177/touring-game/assets/56123042/f5405922-92ba-41c1-ad22-005afd7d6677) ![obraz](https://github.com/mis177/touring-game/assets/56123042/e8ae925f-9b0a-44f2-9af4-b0a9076d7513)
 
 
+Dark mode example:
+![obraz](https://github.com/mis177/touring-game/assets/56123042/df0919eb-e694-4c9a-ae50-4e2edafa30f1)
 
 
 
