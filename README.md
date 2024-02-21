@@ -34,6 +34,7 @@ Notes:
 
 
 Dark mode example:
+
 ![obraz](https://github.com/mis177/touring-game/assets/56123042/df0919eb-e694-4c9a-ae50-4e2edafa30f1)
 
 
