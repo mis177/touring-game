@@ -102,6 +102,10 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
         currentLocation = state.currentLocation;
         activities = state.activities;
       }
+      Widget Function(BuildContext, Widget, TileImage)? mapDarkTheme;
+      if (Theme.of(context).brightness == Brightness.dark) {
+        mapDarkTheme = darkModeTileBuilder;
+      }
       return Scaffold(
         body: Stack(
           children: [
@@ -110,6 +114,7 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
               currentLocation: currentLocation,
               locationLayer: locationLayer,
               mapMarkers: mapMarkers,
+              darkMode: mapDarkTheme,
             ),
             Padding(
               padding: const EdgeInsets.all(15.0),

@@ -11,7 +11,6 @@ import 'package:touring_game/services/theme/bloc/theme_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 import 'package:touring_game/utilities/routes.dart';
-import 'package:touring_game/utilities/theme/themes.dart';
 import 'package:touring_game/views/auth/email_verify_view.dart';
 import 'package:touring_game/views/auth/login_view.dart';
 import 'package:touring_game/views/auth/password_forgot_view.dart';
