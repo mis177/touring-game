@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/note.dart';
 import 'package:touring_game/models/place.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 sealed class GameEvent extends Equatable {
   const GameEvent();
@@ -35,12 +35,12 @@ class GameEventLoadActivityDetails extends GameEvent {
 }
 
 class GameEventActivityDone extends GameEvent {
-  final Widget activityImage;
+  final WebViewController webController;
   final DatabaseActivity activity;
 
   const GameEventActivityDone({
     required this.activity,
-    required this.activityImage,
+    required this.webController,
   });
   @override
   List<Object?> get props => [activity.id];

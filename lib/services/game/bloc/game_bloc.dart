@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/place.dart';
@@ -6,6 +5,7 @@ import 'package:touring_game/services/game/bloc/game_event.dart';
 import 'package:touring_game/services/game/bloc/game_state.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/search_list.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class GameBloc extends Bloc<GameEvent, GameState> {
   GameBloc(FirebaseCloudGameService service)
@@ -48,18 +48,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<GameEventLoadActivityDetails>((event, emit) async {
       emit(const GameStateLoadingActivityDetails(
           isLoading: true, loadingText: 'Loading activity details'));
+      var webController = WebViewController();
+      await webController.loadRequest(Uri.parse(event.activity.webUrl));
 
-      Widget activityImage;
-      try {
-        activityImage = await service.getImage(path: event.activity.imagePath);
-      } on Exception catch (e) {
-        activityImage = const Text('Error while loading image');
-        emit(GameStateLoadingActivityDetails(
-          exception: e,
-        ));
-      }
-
-      emit(GameStateLoadedActivityDetails(activityImage: activityImage));
+      emit(GameStateLoadedActivityDetails(webController: webController));
     });
 
     on<GameEventActivityDone>((event, emit) {
@@ -71,7 +63,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         ));
       }
 
-      emit(GameStateLoadedActivityDetails(activityImage: event.activityImage));
+      emit(GameStateLoadedActivityDetails(webController: event.webController));
     });
 
     on<GameEventSearchPlaces>((event, emit) {

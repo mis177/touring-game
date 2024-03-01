@@ -5,9 +5,7 @@ import 'package:equatable/equatable.dart';
 class DatabaseActivity extends Equatable {
   final String id;
   final String name;
-  final String imagePath;
-  final String title;
-  final String description;
+  final String webUrl;
   final GeoPoint coords;
   bool isDone = false;
   final String placeId;
@@ -15,10 +13,8 @@ class DatabaseActivity extends Equatable {
   DatabaseActivity(
       {required this.id,
       required this.name,
-      required this.imagePath,
+      required this.webUrl,
       required this.isDone,
-      required this.title,
-      required this.description,
       required this.coords,
       required this.placeId});
 
@@ -27,16 +23,13 @@ class DatabaseActivity extends Equatable {
     return DatabaseActivity(
       name: jsonData['name'],
       id: activityId,
-      imagePath: jsonData['image_path'] ?? '',
       isDone: isDone,
-      title: jsonData['title'] ?? '',
-      description: jsonData['description'] ?? '',
+      webUrl: jsonData['webUrl'],
       coords: jsonData['coords'],
       placeId: placeId,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, imagePath, isDone, title, description, coords, placeId];
+  List<Object?> get props => [id, name, isDone, coords, placeId];
 }
