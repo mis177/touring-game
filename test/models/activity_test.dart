@@ -6,18 +6,15 @@ void main() {
   Map<String, dynamic> jsonData = {
     'name': "Test Activity",
     'image_path': 'path/to/image',
-    'title': 'Test title',
-    'description': 'Activity for testing',
+    'webUrl': 'path/to/web',
     'coords': const GeoPoint(10, 20),
   };
 
   DatabaseActivity correctDatabaseActivityResult = DatabaseActivity(
     id: '1',
     name: 'Test Activity',
-    imagePath: 'path/to/image',
+    webUrl: 'path/to/web',
     isDone: true,
-    title: 'Test title',
-    description: 'Activity for testing',
     coords: const GeoPoint(10, 20),
     placeId: '2',
   );

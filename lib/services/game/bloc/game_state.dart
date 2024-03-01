@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart' show Widget, immutable;
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/note.dart';
 import 'package:touring_game/models/place.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
-@immutable
 sealed class GameState {
   final bool isLoading;
   final String? loadingText;
@@ -59,8 +58,8 @@ class GameStateLoadingActivityDetails extends GameState {
 }
 
 class GameStateLoadedActivityDetails extends GameState {
-  final Widget activityImage;
-  const GameStateLoadedActivityDetails({required this.activityImage});
+  final WebViewController webController;
+  const GameStateLoadedActivityDetails({required this.webController});
 }
 
 class GameStateLoadingNotes extends GameState {

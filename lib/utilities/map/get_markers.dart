@@ -46,7 +46,7 @@ List<MyMarker> getMarkers(
                               fontWeight: FontWeight.bold, fontSize: 25),
                         ),
                       ),
-                      Text(activity.title),
+                      Text(activity.name),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(openActivitityDetails,
