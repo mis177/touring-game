@@ -24,7 +24,8 @@ Authentication:
 
 Game:
 
-![obraz](https://github.com/mis177/touring-game/assets/56123042/a9edda5a-49fc-4c71-9779-cb963eb5f1bb) ![obraz](https://github.com/mis177/touring-game/assets/56123042/fad4f6b1-9dbc-4bcd-a479-37bd373681c4)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/d2667a52-5a9e-439b-ab0e-7b3f26653926) ![obraz](https://github.com/mis177/touring-game/assets/56123042/94650f25-7b13-464b-8ba2-581e633a4700) ![obraz](https://github.com/mis177/touring-game/assets/56123042/85f90076-ffdc-42b9-a574-72423b51ede8) ![obraz](https://github.com/mis177/touring-game/assets/56123042/e4b2eee8-02ba-4a17-a997-d8e8eead4ca3) ![obraz](https://github.com/mis177/touring-game/assets/56123042/64e9486c-4861-4557-8c7c-6915e7800fd0)
+![obraz](https://github.com/mis177/touring-game/assets/56123042/a9edda5a-49fc-4c71-9779-cb963eb5f1bb) ![obraz](https://github.com/mis177/touring-game/assets/56123042/fad4f6b1-9dbc-4bcd-a479-37bd373681c4)  ![obraz](https://github.com/mis177/touring-game/assets/56123042/d2667a52-5a9e-439b-ab0e-7b3f26653926) ![obraz](https://github.com/mis177/touring-game/assets/56123042/94650f25-7b13-464b-8ba2-581e633a4700) ![obraz](https://github.com/mis177/touring-game/assets/56123042/ae57818d-e443-4d48-9ed7-bda4f2ab32a1)
+ ![obraz](https://github.com/mis177/touring-game/assets/56123042/e4b2eee8-02ba-4a17-a997-d8e8eead4ca3) ![obraz](https://github.com/mis177/touring-game/assets/56123042/64e9486c-4861-4557-8c7c-6915e7800fd0)
 
 
 
