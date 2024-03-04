@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/place.dart';
@@ -114,6 +115,19 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       emit(const GameStateAddingNote());
 
       service.activityNotes.add(event.databaseNote);
+      emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
+    });
+
+    on<GameEventDeleteNote>((event, emit) async {
+      emit(const GameStateDeletingNote());
+      var noteImage = event.databaseNote.content.image;
+      // check if file is from firebase storage
+      if (noteImage is NetworkImage) {
+        await service.deleteImageFromStorage(
+            imagePath: event.databaseNote.imagePath!);
+      }
+      service.deleteNote(note: event.databaseNote);
+
       emit(GameStateLoadedNotes(activityNotes: service.activityNotes));
     });
 

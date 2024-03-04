@@ -94,6 +94,16 @@ class GameEventAddNote extends GameEvent {
   List<Object?> get props => [databaseNote.id];
 }
 
+class GameEventDeleteNote extends GameEvent {
+  final DatabaseNote databaseNote;
+
+  const GameEventDeleteNote({
+    required this.databaseNote,
+  });
+  @override
+  List<Object?> get props => [databaseNote.id];
+}
+
 class GameEventUpdateNotes extends GameEvent {
   final List<DatabaseNote> databaseNotes;
 

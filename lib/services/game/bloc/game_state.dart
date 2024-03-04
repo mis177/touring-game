@@ -84,6 +84,10 @@ class GameStateAddingNote extends GameState {
   const GameStateAddingNote();
 }
 
+class GameStateDeletingNote extends GameState {
+  const GameStateDeletingNote();
+}
+
 class GameStateUpdateNote extends GameState {
   const GameStateUpdateNote();
 }
