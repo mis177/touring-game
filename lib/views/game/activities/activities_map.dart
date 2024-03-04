@@ -51,10 +51,6 @@ class _ActivitiesMapState extends State<ActivitiesMap> {
 
   bool finishedActivitiesSort = false;
 
-  void refreshWidget() {
-    setState(() {});
-  }
-
   @override
   void dispose() {
     addressSearchController.dispose();

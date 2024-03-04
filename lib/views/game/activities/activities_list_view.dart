@@ -34,6 +34,7 @@ class _ActivitiesListState extends State<ActivitiesList> {
   List<DatabaseActivity> filteredActivities = [];
   bool unfinishedActivitiesSort = false;
   bool finishedActivitiesSort = false;
+
   void reloadList() {
     setState(() {});
   }
@@ -43,21 +44,20 @@ class _ActivitiesListState extends State<ActivitiesList> {
     final argumentList = ModalRoute.of(context)!.settings.arguments as List;
     final activities = argumentList[0];
     filteredActivities = activities;
-    return BlocListener<GameBloc, GameState>(
-      listener: (context, state) {
-        if (state.isLoading) {
-          LoadingScreen().show(
-              context: context,
-              text: state.loadingText ?? 'Please wait a moment');
-        } else {
-          LoadingScreen().hide();
-        }
+    return BlocConsumer<GameBloc, GameState>(listener: (context, state) {
+      if (state.isLoading) {
+        LoadingScreen().show(
+            context: context,
+            text: state.loadingText ?? 'Please wait a moment');
+      } else {
+        LoadingScreen().hide();
+      }
 
-        if (state is GameStateLoadedActivities) {
-          filteredActivities = state.activitiesList;
-        }
-      },
-      child: Scaffold(
+      if (state is GameStateLoadedActivities) {
+        filteredActivities = state.activitiesList;
+      }
+    }, builder: (context, state) {
+      return Scaffold(
         appBar: AppBar(
           centerTitle: true,
           title: const Text('Activities list',
@@ -167,7 +167,7 @@ class _ActivitiesListState extends State<ActivitiesList> {
             ],
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

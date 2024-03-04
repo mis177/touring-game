@@ -29,10 +29,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       }
 
       activitiesList = service.allActivities;
+
       emit(MapStateLoadingMarkers(
           activities: activitiesList,
           isLoading: true,
           loadingText: 'Loading map'));
+
       Position? currentPosition = await getUserLocation();
       emit(MapStateLoadedMap(
         activities: activitiesList,
