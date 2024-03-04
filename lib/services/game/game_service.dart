@@ -62,6 +62,11 @@ class FirebaseCloudGameService {
         activityNotes.indexWhere((element) => element.id == note.id)] = note;
   }
 
+  Future<void> deleteNote({required DatabaseNote note}) async {
+    await provider.deleteNote(note: note);
+    activityNotes.remove(note);
+  }
+
   Future<void> deleteImageFromStorage({required String imagePath}) async {
     await provider.deleteImageFromStorage(imagePath: imagePath);
   }

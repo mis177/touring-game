@@ -75,7 +75,7 @@ class FirebaseCloudGameProvider {
       } on FirebaseException catch (error) {
         if (error.code == 'object-not-found') {
           await imageFirestorePath.putFile(File(note.imagePath!));
-          note.imagePath = imageFirestorePath.fullPath;
+          //note.imagePath = imageFirestorePath.fullPath;
         }
       }
     } else {
@@ -135,6 +135,15 @@ class FirebaseCloudGameProvider {
     });
 
     return notesList;
+  }
+
+  Future<void> deleteNote({required DatabaseNote note}) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('activities_notes')
+        .doc(note.id)
+        .delete();
   }
 
   Future<void> deleteImageFromStorage({required String imagePath}) async {

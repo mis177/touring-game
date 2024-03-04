@@ -12,7 +12,7 @@ import 'package:touring_game/services/game/bloc/game_state.dart';
 import 'package:touring_game/services/game/game_provider.dart';
 import 'package:touring_game/services/game/game_service.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
-import 'package:touring_game/utilities/notes/note.dart';
+import 'package:touring_game/utilities/notes/note_to_widget.dart';
 
 class UserNotesBlocProvider extends StatelessWidget {
   const UserNotesBlocProvider({super.key});
@@ -54,63 +54,17 @@ class _UserNotesState extends State<UserNotes> {
   }
 
   var boardKey = GlobalKey();
-  Widget getNotesWidget(
-    DatabaseNote databaseNote,
-  ) {
-    DatabaseNote note =
-        notes.where((element) => element.id == databaseNote.id).first;
-    return ActivityNote(
-      notesTextController: notesTextController,
-      onRemove: () {
-        setState(() {
-          notes.remove(databaseNote);
-        });
-      },
-      onEdit: () async {
-        if (note.content is String) {
-          notesTextController.text = note.content;
-          await showDialog(
-              context: context,
-              builder: ((context) {
-                return AlertDialog(
-                  title: const Text('Your note'),
-                  icon: const Icon(Icons.note),
-                  content: TextField(
-                    controller: notesTextController,
-                  ),
-                );
-              }));
-          note.content = notesTextController.text;
 
-          notesTextController.clear();
-        } else if (note.content is Image) {
-          final ImagePickerAndroid picker = ImagePickerAndroid();
-          final XFile? image =
-              await picker.getImage(source: ImageSource.gallery);
+  void refreshNotes(DatabaseNote? noteToDelete) {
+    if (noteToDelete != null) {
+      notes.remove(noteToDelete);
 
-          if (image != null) {
-            var oldPath = note.imagePath;
-            note.imagePath = image.path;
-            note.content = Image.file(File(image.path));
-
-            // ignore: use_build_context_synchronously
-            context.read<GameBloc>().add(
-                  GameEventDeleteImageFromStorage(imagePath: oldPath!),
-                );
-          }
-        }
-        setState(() {});
-      },
-      containerKey: boardKey,
-      onDragEnd: (Offset offset) {
-        note.positionX = offset.dx;
-        note.positionY = offset.dy;
-      },
-      databaseNote: databaseNote,
-      onColorChange: (String colorValue) {
-        note.color = colorValue;
-      },
-    );
+      context.read<GameBloc>().add(
+            GameEventDeleteNote(databaseNote: noteToDelete),
+          );
+    } else {
+      setState(() {});
+    }
   }
 
   @override
@@ -142,7 +96,14 @@ class _UserNotesState extends State<UserNotes> {
           if (state is GameStateLoadedNotes) {
             notes = state.activityNotes;
             for (var note in notes) {
-              widgetList.add(getNotesWidget(note));
+              widgetList.add(getNotesWidget(
+                databaseNote: note,
+                notes: notes,
+                notesTextController: notesTextController,
+                context: context,
+                boardKey: boardKey,
+                refresh: refreshNotes,
+              ));
             }
           }
 
