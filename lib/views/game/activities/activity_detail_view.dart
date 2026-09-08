@@ -38,7 +38,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
     bool isDone = activity.isDone;
 
     return PopScope(
-      onPopInvoked: (value) {
+      onPopInvokedWithResult: (didPop, result) {
         argumentList[1]();
         if (argumentList.length > 2) {
           argumentList[2]();

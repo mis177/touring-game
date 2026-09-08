@@ -7,8 +7,8 @@ ElevatedButton getFilterButton(
     required function}) {
   return ElevatedButton(
     style: ButtonStyle(
-      elevation: MaterialStateProperty.resolveWith<double?>(
-          (Set<MaterialState> states) {
+      elevation:
+          WidgetStateProperty.resolveWith<double?>((Set<WidgetState> states) {
         if (clickedThis) {
           return 1;
         } else {

@@ -6,7 +6,6 @@ ThemeData darkTheme = ThemeData(
     primaryContainer: Colors.grey[800],
     secondaryContainer: Colors.grey[200],
     tertiaryContainer: Colors.blue[800],
-    background: Colors.black,
     surface: Colors.grey[800]!,
     onSurface: Colors.white,
   ),
@@ -26,7 +25,7 @@ ThemeData darkTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     fillColor: Colors.grey[800],
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.grey[800],
   ),
   floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -40,7 +39,6 @@ ThemeData lightTheme = ThemeData(
     primaryContainer: Colors.grey[200],
     secondaryContainer: Colors.grey[900],
     tertiaryContainer: Colors.blue[800],
-    background: Colors.grey[300]!,
     surface: Colors.grey[200]!,
     onSurface: Colors.black,
   ),
@@ -60,7 +58,7 @@ ThemeData lightTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     fillColor: Colors.grey[100],
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.grey[100],
   ),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(

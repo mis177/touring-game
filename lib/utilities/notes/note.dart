@@ -54,7 +54,7 @@ class _ActivityNoteState extends State<ActivityNote> {
   Widget build(BuildContext context) {
     double noteSize = MediaQuery.of(context).size.width / 3;
     late Widget contents;
-    widget.onColorChange(noteColor.value.toString());
+    widget.onColorChange(noteColor.toARGB32().toString());
     if (widget.databaseNote.isImage == false) {
       contents = Text(
         widget.databaseNote.content,

@@ -37,6 +37,7 @@ class UserNotes extends StatefulWidget {
 class _UserNotesState extends State<UserNotes> {
   late TextEditingController notesTextController;
   List<DatabaseNote> notes = [];
+  bool _didLoadNotes = false;
 
   List<GlobalKey<State<StatefulWidget>>> globalKeys = [];
 
@@ -44,6 +45,21 @@ class _UserNotesState extends State<UserNotes> {
   void initState() {
     notesTextController = TextEditingController();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoadNotes) {
+      return;
+    }
+
+    final argumentList = ModalRoute.of(context)!.settings.arguments as List;
+    final activity = argumentList[0] as DatabaseActivity;
+    context.read<GameBloc>().add(
+          GameEventLoadNotes(activityId: activity.id),
+        );
+    _didLoadNotes = true;
   }
 
   @override
@@ -71,12 +87,9 @@ class _UserNotesState extends State<UserNotes> {
   Widget build(BuildContext context) {
     final argumentList = ModalRoute.of(context)!.settings.arguments as List;
     final activity = argumentList[0] as DatabaseActivity;
-    context.read<GameBloc>().add(
-          GameEventLoadNotes(activityId: activity.id),
-        );
 
     return PopScope(
-      onPopInvoked: (value) {
+      onPopInvokedWithResult: (didPop, result) {
         context.read<GameBloc>().add(
               GameEventUpdateNotes(databaseNotes: notes),
             );

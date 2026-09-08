@@ -33,7 +33,8 @@ void main() {
               theme: state.themeData,
               title: 'Visiter',
               home: BlocProvider<AuthBloc>(
-                create: (context) => AuthBloc(AuthService.firebase()),
+                create: (context) => AuthBloc(AuthService.firebase())
+                  ..add(const AuthEventInitialize()),
                 child: const HomePage(),
               ),
               routes: {
@@ -69,7 +70,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    context.read<AuthBloc>().add(const AuthEventInitialize());
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state.isLoading) {
