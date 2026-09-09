@@ -5,7 +5,8 @@ import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
-import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/views/auth/auth_form_layout.dart';
+import 'package:touring_game/views/auth/auth_form_validators.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -18,9 +19,8 @@ class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
   late final TextEditingController _passwordConfirm;
+  final _formKey = GlobalKey<FormState>();
   bool obscureText = true;
-  bool wrongConfirmation = false;
-  IconData visibilityIcon = Icons.visibility;
 
   @override
   void initState() {
@@ -45,176 +45,186 @@ class _RegisterViewState extends State<RegisterView> {
         if (state is AuthStateRegistering) {
           if (state.exception is WeakPasswordAuthException) {
             await showCustomDialog(
-                context: context, title: 'Error', text: 'Weak password');
+              context: context,
+              title: 'Error',
+              text: 'Weak password',
+            );
           } else if (state.exception is EmailAlreadyInUseAuthException) {
             await showCustomDialog(
-                context: context,
-                title: 'Error',
-                text: 'Email is already in use');
+              context: context,
+              title: 'Error',
+              text: 'Email is already in use',
+            );
           } else if (state.exception is GenericAuthException) {
             await showCustomDialog(
-                context: context, title: 'Error', text: 'Failed to register');
+              context: context,
+              title: 'Error',
+              text: 'Failed to register',
+            );
           } else if (state.exception is InvalidEmailAuthException) {
             await showCustomDialog(
-                context: context, title: 'Error', text: 'Invalid email');
-          } else if (state.isLoading) {
-            LoadingScreen().show(
-                context: context,
-                text: state.loadingText ?? 'Please wait a moment');
-          } else {
-            LoadingScreen().hide();
+              context: context,
+              title: 'Error',
+              text: 'Invalid email',
+            );
+          } else if (state.exception != null) {
+            await showCustomDialog(
+              context: context,
+              title: 'Error',
+              text: 'Failed to register. Please try again.',
+            );
           }
         }
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(25),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 120),
-                  child: Image.asset('lib/images/app_icon.png'),
-                ),
-                const SizedBox(height: 25),
-                Text(
-                  'Visiter',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 40,
-                    color: Theme.of(context).colorScheme.tertiaryContainer,
-                  ),
-                ),
-                const SizedBox(height: 50),
-                const Text(
-                  'Create your account',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 25),
-                TextField(
-                  controller: _email,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email),
-                    alignLabelWithHint: true,
-                    labelText: 'Enter your email',
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+        body: AuthScrollableBody(
+          child: AutofillGroup(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const AuthLogo(),
+                  const SizedBox(height: 25),
+                  Text(
+                    'Visiter',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 40,
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _password,
-                  obscureText: obscureText,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      icon: Icon(visibilityIcon),
-                      onPressed: () {
-                        setState(() {
-                          obscureText = !obscureText;
-                          if (obscureText) {
-                            visibilityIcon = Icons.visibility;
-                          } else {
-                            visibilityIcon = Icons.visibility_off;
-                          }
-                        });
-                      },
-                    ),
-                    alignLabelWithHint: true,
-                    labelText: 'Enter your password',
-                    prefixIcon: const Icon(Icons.lock),
-                    filled: true,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                  const SizedBox(height: 50),
+                  const Text(
+                    'Create your account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
+                  ),
+                  const SizedBox(height: 25),
+                  TextFormField(
+                    controller: _email,
+                    validator: validateEmail,
+                    autofillHints: const [AutofillHints.newUsername],
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.email),
+                      alignLabelWithHint: true,
+                      labelText: 'Enter your email',
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _passwordConfirm,
-                  obscureText: true,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    alignLabelWithHint: true,
-                    labelText: 'Confirm your password',
-                    errorText:
-                        wrongConfirmation ? 'Passwords don\'t match ' : null,
-                    prefixIcon: const Icon(Icons.lock),
-                    filled: true,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _password,
+                    validator: validatePassword,
+                    autofillHints: const [AutofillHints.newPassword],
+                    obscureText: obscureText,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureText ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            obscureText = !obscureText;
+                          });
+                        },
+                      ),
+                      alignLabelWithHint: true,
+                      labelText: 'Enter your password',
+                      prefixIcon: const Icon(Icons.lock),
+                      filled: true,
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 48),
-                FilledButton(
-                  onPressed: () async {
-                    final email = _email.text;
-                    final password = _password.text;
-                    final passwordConfirm = _passwordConfirm.text;
-
-                    if (password != passwordConfirm) {
-                      setState(() {
-                        _passwordConfirm.clear();
-                        wrongConfirmation = true;
-                      });
-                    } else {
-                      wrongConfirmation = false;
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _passwordConfirm,
+                    validator: (value) {
+                      final passwordError = validatePassword(value);
+                      if (passwordError != null) {
+                        return passwordError;
+                      }
+                      return value == _password.text
+                          ? null
+                          : 'Passwords do not match';
+                    },
+                    autofillHints: const [AutofillHints.newPassword],
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
+                    decoration: const InputDecoration(
+                      alignLabelWithHint: true,
+                      labelText: 'Confirm your password',
+                      prefixIcon: Icon(Icons.lock),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  FilledButton(
+                    onPressed: _submit,
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(fontSize: 36),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  TextButton(
+                    onPressed: () {
                       context.read<AuthBloc>().add(
-                            AuthEventRegister(
-                              email,
-                              password,
+                        const AuthEventShouldLogIn(),
+                      );
+                    },
+                    child: Text.rich(
+                      TextSpan(
+                        children: <TextSpan>[
+                          const TextSpan(text: 'Already registered? '),
+                          TextSpan(
+                            text: ' Log in',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.tertiaryContainer,
                             ),
-                          );
-                    }
-                  },
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(fontSize: 36),
-                  ),
-                ),
-                const SizedBox(height: 25),
-                TextButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(const AuthEventShouldLogIn());
-                  },
-                  child: Text.rich(
-                    TextSpan(
-                      children: <TextSpan>[
-                        const TextSpan(
-                          text: 'Already registered? ',
-                        ),
-                        TextSpan(
-                          text: ' Log in',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).colorScheme.tertiaryContainer,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    context.read<AuthBloc>().add(
+      AuthEventRegister(_email.text, _password.text),
     );
   }
 }

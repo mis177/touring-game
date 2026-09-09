@@ -1,173 +1,133 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:touring_game/models/activity.dart';
-import 'package:touring_game/services/game/bloc/game_bloc.dart';
-import 'package:touring_game/services/game/bloc/game_event.dart';
-import 'package:touring_game/services/game/bloc/game_state.dart';
-import 'package:touring_game/services/game/game_provider.dart';
-import 'package:touring_game/services/game/game_service.dart';
-import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
+import 'package:touring_game/services/game/bloc/activities/activities_cubit.dart';
 import 'package:touring_game/utilities/map/activities_filter_button.dart';
 import 'package:touring_game/utilities/routes.dart';
 
-class ActivitiesListBlocProvider extends StatelessWidget {
-  const ActivitiesListBlocProvider({super.key});
+class ActivitiesListProvider extends StatelessWidget {
+  const ActivitiesListProvider({super.key, required this.arguments});
+
+  final ActivitiesListArguments arguments;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => GameBloc(
-          FirebaseCloudGameService(provider: FirebaseCloudGameProvider())),
-      child: const ActivitiesList(),
+      create: (_) => ActivitiesCubit(arguments.activities),
+      child: ActivitiesList(onChanged: arguments.onChanged),
     );
   }
 }
 
-class ActivitiesList extends StatefulWidget {
-  const ActivitiesList({super.key});
+class ActivitiesList extends StatelessWidget {
+  const ActivitiesList({super.key, required this.onChanged});
 
-  @override
-  State<ActivitiesList> createState() => _ActivitiesListState();
-}
+  final VoidCallback onChanged;
 
-class _ActivitiesListState extends State<ActivitiesList> {
-  List<DatabaseActivity> filteredActivities = [];
-  bool unfinishedActivitiesSort = false;
-  bool finishedActivitiesSort = false;
-
-  void reloadList() {
-    setState(() {});
+  void _updateActivity(BuildContext context, DatabaseActivity updatedActivity) {
+    context.read<ActivitiesCubit>().replace(updatedActivity);
+    onChanged();
   }
 
   @override
   Widget build(BuildContext context) {
-    final argumentList = ModalRoute.of(context)!.settings.arguments as List;
-    final activities = argumentList[0];
-    filteredActivities = activities;
-    return BlocConsumer<GameBloc, GameState>(listener: (context, state) {
-      if (state.isLoading) {
-        LoadingScreen().show(
-            context: context,
-            text: state.loadingText ?? 'Please wait a moment');
-      } else {
-        LoadingScreen().hide();
-      }
-
-      if (state is GameStateLoadedActivities) {
-        filteredActivities = state.activitiesList;
-      }
-    }, builder: (context, state) {
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Activities list',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              TextField(
-                decoration: InputDecoration(
+    return BlocBuilder<ActivitiesCubit, ActivitiesState>(
+      builder: (context, state) {
+        final finishedSelected = state.filter == ActivityStatusFilter.finished;
+        final unfinishedSelected =
+            state.filter == ActivityStatusFilter.unfinished;
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: const Text(
+              'Activities list',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              children: [
+                TextField(
+                  decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
                     hintText: 'Search',
                     filled: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
-                    )),
-                onChanged: (value) {
-                  context.read<GameBloc>().add(
-                        GameEventSearchActivitiesText(
-                            text: value, activities: activities),
-                      );
-                },
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 5.0),
-                      child: getFilterButton(
-                        clickedThis: unfinishedActivitiesSort,
-                        clickedOther: finishedActivitiesSort,
-                        function: () {
-                          unfinishedActivitiesSort = !unfinishedActivitiesSort;
-                          if (unfinishedActivitiesSort) {
-                            finishedActivitiesSort = false;
-                          }
-                          context.read<GameBloc>().add(
-                                GameEventSearchActivitiesFinished(
-                                    finished: false,
-                                    activities: activities,
-                                    value: unfinishedActivitiesSort),
-                              );
-                        },
-                        text: 'Unfinished',
-                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5.0),
-                      child: getFilterButton(
-                        clickedThis: finishedActivitiesSort,
-                        clickedOther: unfinishedActivitiesSort,
-                        function: () {
-                          finishedActivitiesSort = !finishedActivitiesSort;
-                          if (finishedActivitiesSort) {
-                            unfinishedActivitiesSort = false;
-                          }
-                          context.read<GameBloc>().add(
-                                GameEventSearchActivitiesFinished(
-                                    finished: true,
-                                    activities: activities,
-                                    value: finishedActivitiesSort),
-                              );
-                        },
-                        text: 'Finished',
+                  onChanged: context.read<ActivitiesCubit>().search,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 5),
+                        child: getFilterButton(
+                          clickedThis: unfinishedSelected,
+                          clickedOther: finishedSelected,
+                          function: () => context
+                              .read<ActivitiesCubit>()
+                              .toggleFilter(ActivityStatusFilter.unfinished),
+                          text: 'Unfinished',
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                    itemCount: filteredActivities.length,
-                    itemBuilder: (ctx, index) {
-                      Color activityColor =
-                          Theme.of(context).colorScheme.onSurface;
-                      if (filteredActivities[index].isDone) {
-                        activityColor = Colors.green;
-                      }
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: getFilterButton(
+                          clickedThis: finishedSelected,
+                          clickedOther: unfinishedSelected,
+                          function: () => context
+                              .read<ActivitiesCubit>()
+                              .toggleFilter(ActivityStatusFilter.finished),
+                          text: 'Finished',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: state.activities.length,
+                    itemBuilder: (context, index) {
+                      final activity = state.activities[index];
+                      final color = activity.isDone
+                          ? Colors.green
+                          : Theme.of(context).colorScheme.onSurface;
                       return Card(
-                          shadowColor: activityColor,
-                          child: ListTile(
-                            leading: const Icon(Icons.attractions),
-                            title: Text(
-                              style: TextStyle(color: activityColor),
-                              filteredActivities[index].name,
-                              maxLines: 1,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
+                        shadowColor: color,
+                        child: ListTile(
+                          leading: const Icon(Icons.attractions),
+                          title: Text(
+                            activity.name,
+                            style: TextStyle(color: color),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => context.push(
+                            activityDetailsRoute,
+                            extra: ActivityDetailsArguments(
+                              activity: activity,
+                              onChanged: (updated) =>
+                                  _updateActivity(context, updated),
                             ),
-                            onTap: () {
-                              Navigator.of(context)
-                                  .pushNamed(openActivitityDetails, arguments: [
-                                filteredActivities[index],
-                                reloadList,
-                                argumentList[1],
-                              ]);
-                            },
-                          ));
-                    }),
-              ),
-            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

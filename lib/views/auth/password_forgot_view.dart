@@ -5,6 +5,8 @@ import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
+import 'package:touring_game/views/auth/auth_form_layout.dart';
+import 'package:touring_game/views/auth/auth_form_validators.dart';
 
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
@@ -15,6 +17,7 @@ class ForgotPasswordView extends StatefulWidget {
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   late final TextEditingController _controller;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -34,81 +37,90 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       listener: (context, state) async {
         if (state is AuthStateForgotPassword) {
           if (state.exception != null) {
-            if (state.exception is UserNotFoundException) {
+            if (state.exception is InvalidEmailAuthException) {
               await showCustomDialog(
-                  context: context, title: 'Error', text: 'Email not found');
+                context: context,
+                title: 'Error',
+                text: 'Invalid email',
+              );
             } else {
               await showCustomDialog(
-                  context: context,
-                  title: 'Error',
-                  text: 'We could not proceed');
+                context: context,
+                title: 'Error',
+                text: 'We could not proceed',
+              );
             }
-          } else if (state.emailSent == true) {
+          } else if (state.feedback == AuthFeedback.passwordResetEmailSent) {
             _controller.clear();
             await showCustomDialog(
-                context: context,
-                title: 'Success',
-                text: 'Email was sent successfully');
+              context: context,
+              title: 'Success',
+              text:
+                  'If an account exists for this email, a reset link was sent.',
+            );
           }
         }
       },
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 120),
-                child: Image.asset('lib/images/app_icon.png'),
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Enter email and click password reset',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+        body: AuthScrollableBody(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const AuthLogo(),
+                const SizedBox(height: 25),
+                const Text(
+                  'Enter email and click password reset',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
-              ),
-              const SizedBox(height: 25),
-              TextField(
-                keyboardType: TextInputType.emailAddress,
-                autocorrect: false,
-                autofocus: true,
-                controller: _controller,
-                decoration: const InputDecoration(
-                  labelText: 'Your email adress',
-                  prefixIcon: Icon(Icons.email),
-                  alignLabelWithHint: true,
-                  filled: true,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                const SizedBox(height: 25),
+                TextFormField(
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  autofocus: true,
+                  controller: _controller,
+                  validator: validateEmail,
+                  autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submit(),
+                  decoration: const InputDecoration(
+                    labelText: 'Your email address',
+                    prefixIcon: Icon(Icons.email),
+                    alignLabelWithHint: true,
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 25),
-              FilledButton(
-                onPressed: () {
-                  final email = _controller.text;
-                  context
-                      .read<AuthBloc>()
-                      .add(AuthEventForgotPassword(email: email));
-                },
-                child: const Text('Reset password'),
-              ),
-              const SizedBox(height: 15),
-              OutlinedButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(
-                        const AuthEventLogOut(),
-                      );
-                },
-                child: const Text('Back to login page'),
-              )
-            ],
+                const SizedBox(height: 25),
+                FilledButton(
+                  onPressed: _submit,
+                  child: const Text('Reset password'),
+                ),
+                const SizedBox(height: 15),
+                OutlinedButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(const AuthEventShouldLogIn());
+                  },
+                  child: const Text('Back to login page'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    context.read<AuthBloc>().add(
+      AuthEventPasswordResetRequested(_controller.text),
     );
   }
 }

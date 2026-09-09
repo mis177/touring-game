@@ -1,19 +1,22 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:touring_game/core/search_filters.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/address.dart';
+import 'package:touring_game/models/coordinates.dart';
 
 @immutable
 sealed class MapState extends Equatable {
   final bool isLoading;
   final String? loadingText;
+  final Exception? exception;
   const MapState({
     this.isLoading = false,
     this.loadingText = 'Please wait a moment',
+    this.exception,
   });
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [isLoading, loadingText, exception];
 }
 
 class MapStateUninitialized extends MapState {
@@ -21,9 +24,8 @@ class MapStateUninitialized extends MapState {
 }
 
 class MapStateLoadingMap extends MapState {
-  final Exception? exception;
   const MapStateLoadingMap({
-    this.exception,
+    super.exception,
     super.isLoading,
     super.loadingText = null,
   });
@@ -31,47 +33,25 @@ class MapStateLoadingMap extends MapState {
 
 class MapStateLoadedMap extends MapState {
   final List<DatabaseActivity> activities;
-  final Position? currentLocation;
+  final Coordinates? currentLocation;
   final List<AddressModel> searchResults;
+  final ActivityStatusFilter? activityFilter;
 
   const MapStateLoadedMap({
     required this.activities,
     required this.currentLocation,
     required this.searchResults,
-  });
-  @override
-  List<Object?> get props => [searchResults];
-}
-
-class MapStateMarkerClicked extends MapState {
-  const MapStateMarkerClicked();
-}
-
-class MapStateSearchingAddress extends MapState {
-  final Exception? exception;
-  const MapStateSearchingAddress({
-    this.exception,
+    required this.activityFilter,
+    super.exception,
     super.isLoading,
     super.loadingText = null,
   });
-}
-
-class MapStateAddressSearchEnded extends MapState {
-  final List<AddressModel> repo;
-  const MapStateAddressSearchEnded({required this.repo});
   @override
-  List<Object?> get props => [repo];
-}
-
-class MapStateGettingUserLocation extends MapState {
-  const MapStateGettingUserLocation();
-}
-
-class MapStateLoadingMarkers extends MapState {
-  final List<DatabaseActivity> activities;
-  const MapStateLoadingMarkers({
-    required this.activities,
-    super.isLoading,
-    super.loadingText = null,
-  });
+  List<Object?> get props => [
+    ...super.props,
+    activities,
+    currentLocation,
+    searchResults,
+    activityFilter,
+  ];
 }

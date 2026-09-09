@@ -1,163 +1,322 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
-import 'package:touring_game/services/auth/auth_service.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:touring_game/services/auth/auth_exceptions.dart';
+import 'package:touring_game/services/auth/auth_repository.dart';
 import 'package:touring_game/services/auth/auth_user.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(AuthService service)
-      : super(const AuthStateUninitialized(isLoading: true)) {
-    // initialize
-    on<AuthEventInitialize>((event, emit) async {
-      await service.initialize();
-      final user = service.currentUser;
-      if (user == null) {
-        emit(
-          const AuthStateFirstTimeOpened(),
-        );
-      } else if (!user.isEmailVerified) {
-        emit(const AuthStateNeedsVerification());
-      } else {
-        emit(AuthStateLoggedIn(
-          userEmail: user.email,
-        ));
-      }
-    });
+  AuthBloc(this._repository)
+    : super(const AuthStateUninitialized(isLoading: true)) {
+    on<AuthEvent>(_onEvent, transformer: sequential());
+  }
 
-    //back to register view
-    on<AuthEventShouldRegister>((event, emit) {
-      emit(const AuthStateRegistering());
-    });
+  final AuthRepository _repository;
+  StreamSubscription<AuthUser?>? _sessionSubscription;
 
-    //back to login view
-    on<AuthEventShouldLogIn>((event, emit) {
-      emit(const AuthStateLoggingIn());
-    });
+  Future<void> _onEvent(AuthEvent event, Emitter<AuthState> emit) async {
+    switch (event) {
+      case AuthEventInitialize():
+        await _initialize(emit);
+      case AuthEventShouldRegister():
+        emit(const AuthStateRegistering());
+      case AuthEventShouldLogIn():
+        emit(const AuthStateLoggingIn());
+      case AuthEventRegister():
+        await _register(event, emit);
+      case AuthEventLogIn():
+        await _logIn(event, emit);
+      case AuthEventLogOut():
+        await _logOut(emit);
+      case AuthEventForgotPassword():
+        emit(const AuthStateForgotPassword());
+      case AuthEventPasswordResetRequested():
+        await _resetPassword(event, emit);
+      case AuthEventSendEmailVerification():
+        await _sendEmailVerification(emit);
+      case AuthEventRefreshUser():
+        await _refreshUser(emit);
+      case AuthEventChangePassword():
+        await _resetCurrentUserPassword(emit);
+      case AuthEventDeleteUser():
+        await _deleteUser(emit);
+      case AuthEventSessionChanged():
+        _sessionChanged(event, emit);
+      case AuthEventSessionError():
+        emit(_sessionStateAfterFailure(state, event.exception));
+    }
+  }
 
-    //register
-    on<AuthEventRegister>((event, emit) async {
-      final email = event.email;
-      final password = event.password;
-      emit(const AuthStateRegistering(
-          isLoading: true, loadingText: 'Creating account'));
-      try {
-        await service.createUser(
-          email: email,
-          password: password,
-        );
-        await service.sendEmailVeryfication();
-        emit(const AuthStateNeedsVerification());
-      } on Exception catch (e) {
-        emit(AuthStateRegistering(
-          exception: e,
-        ));
-      }
-    });
-
-    // log in
-    on<AuthEventLogIn>((event, emit) async {
-      emit(
-        const AuthStateLoggingIn(isLoading: true, loadingText: 'Logging in'),
+  Future<void> _initialize(Emitter<AuthState> emit) async {
+    try {
+      await _repository.initialize();
+      await _sessionSubscription?.cancel();
+      _sessionSubscription = _repository.watchAuthState().listen(
+        (user) => add(AuthEventSessionChanged(user)),
+        onError: (Object error) => add(
+          AuthEventSessionError(
+            error is Exception ? error : GenericAuthException(error),
+          ),
+        ),
       );
-      final email = event.email;
-      final password = event.password;
-      try {
-        final user = await service.logIn(
-          email: email,
-          password: password,
-        );
+      final user = _repository.currentUser;
+      emit(
+        user == null ? const AuthStateFirstTimeOpened() : _stateForUser(user),
+      );
+    } on Exception catch (error) {
+      emit(AuthStateLoggingIn(exception: error));
+    }
+  }
 
-        if (!user.isEmailVerified) {
-          await service.sendEmailVeryfication();
-          emit(const AuthStateNeedsVerification());
-        } else {
-          emit(AuthStateLoggedIn(
-            userEmail: user.email,
-          ));
-        }
-      } on Exception catch (e) {
-        emit(
-          AuthStateLoggingIn(
-            exception: e,
-          ),
-        );
-      }
-    });
-    // log out
-    on<AuthEventLogOut>((event, emit) async {
-      try {
-        await service.logOut();
-        emit(
-          const AuthStateLoggingIn(),
-        );
-      } on Exception catch (e) {
-        emit(
-          AuthStateLoggingIn(
-            exception: e,
-          ),
-        );
-      }
-    });
-
-    //forgot password
-    on<AuthEventForgotPassword>((event, emit) async {
-      emit(const AuthStateForgotPassword());
-      final email = event.email;
-      if (email == null) {
+  Future<void> _register(
+    AuthEventRegister event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(
+      const AuthStateRegistering(
+        isLoading: true,
+        loadingText: 'Creating account',
+      ),
+    );
+    try {
+      final user = await _repository.createUser(
+        email: event.email.trim(),
+        password: event.password,
+      );
+      if (user.isEmailVerified) {
+        emit(AuthStateLoggedIn(userEmail: user.email));
         return;
       }
+      try {
+        await _repository.sendEmailVerification();
+        emit(
+          AuthStateNeedsVerification(
+            userEmail: user.email,
+            feedback: AuthFeedback.verificationEmailSent,
+          ),
+        );
+      } on Exception catch (error) {
+        emit(
+          AuthStateNeedsVerification(userEmail: user.email, exception: error),
+        );
+      }
+    } on Exception catch (error) {
+      emit(AuthStateRegistering(exception: error));
+    }
+  }
 
-      emit(const AuthStateForgotPassword(
+  Future<void> _logIn(AuthEventLogIn event, Emitter<AuthState> emit) async {
+    emit(const AuthStateLoggingIn(isLoading: true, loadingText: 'Logging in'));
+    try {
+      final user = await _repository.logIn(
+        email: event.email.trim(),
+        password: event.password,
+      );
+      emit(_stateForUser(user));
+    } on Exception catch (error) {
+      emit(AuthStateLoggingIn(exception: error));
+    }
+  }
+
+  Future<void> _logOut(Emitter<AuthState> emit) async {
+    final previousState = state;
+    emit(_loadingSessionState('Logging out'));
+    try {
+      await _repository.logOut();
+      emit(const AuthStateLoggingIn());
+    } on Exception catch (error) {
+      emit(_sessionStateAfterFailure(previousState, error));
+    }
+  }
+
+  Future<void> _resetPassword(
+    AuthEventPasswordResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(
+      const AuthStateForgotPassword(
         isLoading: true,
-      ));
-      Exception? exception;
-      bool emailSent;
-      try {
-        await service.sendPasswordReset(toEmail: email, loggedIn: false);
-        exception = null;
-        emailSent = true;
-      } on Exception catch (e) {
-        exception = e;
-        emailSent = false;
+        loadingText: 'Sending password reset email',
+      ),
+    );
+    try {
+      await _repository.sendPasswordReset(event.email.trim());
+      emit(
+        const AuthStateForgotPassword(
+          feedback: AuthFeedback.passwordResetEmailSent,
+        ),
+      );
+    } on UserNotFoundException {
+      emit(
+        const AuthStateForgotPassword(
+          feedback: AuthFeedback.passwordResetEmailSent,
+        ),
+      );
+    } on Exception catch (error) {
+      emit(AuthStateForgotPassword(exception: error));
+    }
+  }
+
+  Future<void> _sendEmailVerification(Emitter<AuthState> emit) async {
+    final email = state.userEmail;
+    emit(
+      AuthStateNeedsVerification(
+        userEmail: email,
+        isLoading: true,
+        loadingText: 'Sending verification email',
+      ),
+    );
+    try {
+      await _repository.sendEmailVerification();
+      emit(
+        AuthStateNeedsVerification(
+          userEmail: email,
+          feedback: AuthFeedback.verificationEmailSent,
+        ),
+      );
+    } on Exception catch (error) {
+      emit(AuthStateNeedsVerification(userEmail: email, exception: error));
+    }
+  }
+
+  Future<void> _refreshUser(Emitter<AuthState> emit) async {
+    final email = state.userEmail;
+    emit(
+      AuthStateNeedsVerification(
+        userEmail: email,
+        isLoading: true,
+        loadingText: 'Checking verification status',
+      ),
+    );
+    try {
+      final user = await _repository.refreshCurrentUser();
+      if (user == null) {
+        emit(
+          const AuthStateLoggingIn(exception: UserNotLoggedInAuthException()),
+        );
+      } else {
+        emit(_stateForUser(user));
       }
-      emit(AuthStateForgotPassword(
-        exception: exception,
-        emailSent: emailSent,
-      ));
-    });
-    //send email verification
-    on<AuthEventSendEmailVerification>((event, emit) async {
-      await service.sendEmailVeryfication();
-      emit(const AuthStateNeedsVerification());
-    });
+    } on Exception catch (error) {
+      emit(_sessionStateAfterFailure(state, error));
+    }
+  }
 
-    //send email change password
-    on<AuthEventChangePassword>((event, emit) async {
-      Exception? exception;
-
-      try {
-        await service.sendPasswordReset(toEmail: '', loggedIn: true);
-      } on Exception catch (e) {
-        exception = e;
+  Future<void> _resetCurrentUserPassword(Emitter<AuthState> emit) async {
+    final previousState = state;
+    emit(_loadingSessionState('Sending password reset email'));
+    try {
+      await _repository.sendPasswordResetForCurrentUser();
+      final user = _repository.currentUser;
+      if (user == null) {
+        emit(
+          const AuthStateLoggingIn(exception: UserNotLoggedInAuthException()),
+        );
+      } else {
+        emit(
+          _stateForUser(user, feedback: AuthFeedback.passwordResetEmailSent),
+        );
       }
-      AuthUser? currentUser = service.currentUser;
+    } on Exception catch (error) {
+      emit(_sessionStateAfterFailure(previousState, error));
+    }
+  }
 
-      emit(AuthStateEmailSent(
-          exception: exception, userEmail: currentUser!.email));
-    });
+  Future<void> _deleteUser(Emitter<AuthState> emit) async {
+    final previousState = state;
+    emit(_loadingSessionState('Deleting account'));
+    try {
+      await _repository.deleteUser();
+      emit(const AuthStateLoggingIn(feedback: AuthFeedback.accountDeleted));
+    } on Exception catch (error) {
+      emit(_sessionStateAfterFailure(previousState, error));
+    }
+  }
 
-    on<AuthEventDeleteUser>((event, emit) async {
-      Exception? exception;
-      emit(const AuthStateUserDeleting(
-          isLoading: true, loadingText: 'Deleting account'));
-      try {
-        await service.deleteUser();
-        emit(const AuthStateUserDeleted());
-      } on Exception catch (e) {
-        exception = e;
+  AuthState _stateForUser(
+    AuthUser user, {
+    Exception? exception,
+    AuthFeedback? feedback,
+  }) {
+    return user.isEmailVerified
+        ? AuthStateLoggedIn(
+            userEmail: user.email,
+            exception: exception,
+            feedback: feedback,
+          )
+        : AuthStateNeedsVerification(
+            userEmail: user.email,
+            exception: exception,
+            feedback: feedback,
+          );
+  }
 
-        emit(AuthStateUserDeletedError(exception: exception));
+  void _sessionChanged(AuthEventSessionChanged event, Emitter<AuthState> emit) {
+    final user = event.user;
+    if (user == null) {
+      if (state is AuthStateLoggedIn || state is AuthStateNeedsVerification) {
+        emit(const AuthStateLoggingIn());
       }
-    });
+      return;
+    }
+
+    final alreadyCurrent =
+        state.userEmail == user.email &&
+        ((state is AuthStateLoggedIn && user.isEmailVerified) ||
+            (state is AuthStateNeedsVerification && !user.isEmailVerified));
+    if (!alreadyCurrent) {
+      emit(_stateForUser(user));
+    }
+  }
+
+  AuthState _loadingSessionState(String loadingText) {
+    final email = state.userEmail;
+    return state is AuthStateNeedsVerification
+        ? AuthStateNeedsVerification(
+            userEmail: email,
+            isLoading: true,
+            loadingText: loadingText,
+          )
+        : AuthStateLoggedIn(
+            userEmail: email ?? '',
+            isLoading: true,
+            loadingText: loadingText,
+          );
+  }
+
+  AuthState _sessionStateAfterFailure(
+    AuthState previousState,
+    Exception error,
+  ) {
+    try {
+      final user = _repository.currentUser;
+      if (user != null) {
+        return _stateForUser(user, exception: error);
+      }
+    } on Exception {
+      // Preserve the last known session state below.
+    }
+    if (previousState is AuthStateNeedsVerification) {
+      return AuthStateNeedsVerification(
+        userEmail: previousState.userEmail,
+        exception: error,
+      );
+    }
+    if (previousState is AuthStateLoggedIn) {
+      return AuthStateLoggedIn(
+        userEmail: previousState.userEmail ?? '',
+        exception: error,
+      );
+    }
+    return AuthStateLoggingIn(exception: error);
+  }
+
+  @override
+  Future<void> close() async {
+    await _sessionSubscription?.cancel();
+    return super.close();
   }
 }

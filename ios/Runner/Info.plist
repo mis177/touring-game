@@ -51,5 +51,7 @@
 	<string>App needs image library access.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>App needs microphone access.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to show nearby activities and center the map.</string>
 </dict>
 </plist>

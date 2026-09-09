@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:touring_game/services/auth/auth_exceptions.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_bloc.dart';
 import 'package:touring_game/services/auth/bloc/auth/auth_event.dart';
-import 'package:touring_game/services/auth/bloc/auth/auth_state.dart';
-import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
+import 'package:touring_game/views/auth/auth_form_layout.dart';
+import 'package:touring_game/views/auth/auth_form_validators.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -16,8 +15,8 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+  final _formKey = GlobalKey<FormState>();
   bool obscureText = true;
-  IconData visibilityIcon = Icons.visibility;
 
   @override
   void initState() {
@@ -35,30 +34,16 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) async {
-        if (state is AuthStateLoggingIn) {
-          if (state.exception is InvalidLoginCredentialsAuthException) {
-            await showCustomDialog(
-                context: context, title: 'Error', text: 'Invalid credentials');
-          } else if (state.exception is GenericAuthException) {
-            await showCustomDialog(
-                context: context, title: 'Error', text: 'Authentication error');
-          }
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(25),
+    return Scaffold(
+      body: AuthScrollableBody(
+        child: AutofillGroup(
+          child: Form(
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 120),
-                  child: Image.asset('lib/images/app_icon.png'),
-                ),
+                const AuthLogo(),
                 const SizedBox(height: 25),
                 Text(
                   'Visiter',
@@ -73,17 +58,17 @@ class _LoginViewState extends State<LoginView> {
                 const Text(
                   'Log In to your account',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                 ),
                 const SizedBox(height: 25),
-                TextField(
+                TextFormField(
                   controller: _email,
+                  validator: validateEmail,
+                  autofillHints: const [AutofillHints.email],
                   enableSuggestions: false,
                   autocorrect: false,
                   keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.email),
                     alignLabelWithHint: true,
@@ -95,22 +80,23 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
+                TextFormField(
                   controller: _password,
+                  validator: validatePassword,
+                  autofillHints: const [AutofillHints.password],
                   obscureText: obscureText,
                   enableSuggestions: false,
                   autocorrect: false,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
-                      icon: Icon(visibilityIcon),
+                      icon: Icon(
+                        obscureText ? Icons.visibility : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           obscureText = !obscureText;
-                          if (obscureText) {
-                            visibilityIcon = Icons.visibility;
-                          } else {
-                            visibilityIcon = Icons.visibility_off;
-                          }
                         });
                       },
                     ),
@@ -129,61 +115,53 @@ class _LoginViewState extends State<LoginView> {
                     TextButton(
                       onPressed: () {
                         context.read<AuthBloc>().add(
-                              const AuthEventForgotPassword(),
-                            );
+                          const AuthEventForgotPassword(),
+                        );
                       },
-                      child: const Text(
-                        'Forgot password',
-                      ),
+                      child: const Text('Forgot password'),
                     ),
                   ],
                 ),
                 FilledButton(
-                  onPressed: () async {
-                    final email = _email.text;
-                    final password = _password.text;
-                    context.read<AuthBloc>().add(
-                          AuthEventLogIn(
-                            email,
-                            password,
-                          ),
-                        );
-                  },
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(fontSize: 36),
-                  ),
+                  onPressed: _submit,
+                  child: const Text('Log In', style: TextStyle(fontSize: 36)),
                 ),
                 const SizedBox(height: 25),
                 TextButton(
                   onPressed: () {
                     context.read<AuthBloc>().add(
-                          const AuthEventShouldRegister(),
-                        );
+                      const AuthEventShouldRegister(),
+                    );
                   },
                   child: Text.rich(
                     TextSpan(
                       children: <TextSpan>[
-                        const TextSpan(
-                          text: 'Not registered? ',
-                        ),
+                        const TextSpan(text: 'Not registered? '),
                         TextSpan(
                           text: 'Sign Up',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).colorScheme.tertiaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.tertiaryContainer,
                           ),
                         ),
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    context.read<AuthBloc>().add(AuthEventLogIn(_email.text, _password.text));
   }
 }

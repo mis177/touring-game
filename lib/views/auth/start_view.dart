@@ -36,48 +36,30 @@ class WelcomeView extends StatelessWidget {
             const Text(
               'Hello traveler!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
             ),
             const Text(
               'This is an app for people who like to travel, discover new places and are not boomers.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: TextStyle(fontSize: 16),
             ),
             const Text(
               "Sounds good? Let's hop in!",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.red,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.red),
             ),
             const SizedBox(height: 10),
             FilledButton(
               onPressed: () {
-                context.read<AuthBloc>().add(
-                      const AuthEventShouldRegister(),
-                    );
+                context.read<AuthBloc>().add(const AuthEventShouldRegister());
               },
-              child: const Text(
-                'Sign Up',
-                style: TextStyle(fontSize: 36),
-              ),
+              child: const Text('Sign Up', style: TextStyle(fontSize: 36)),
             ),
             OutlinedButton(
               onPressed: () {
-                context.read<AuthBloc>().add(
-                      const AuthEventShouldLogIn(),
-                    );
+                context.read<AuthBloc>().add(const AuthEventShouldLogIn());
               },
-              child: const Text(
-                'Log In',
-                style: TextStyle(fontSize: 36),
-              ),
+              child: const Text('Log In', style: TextStyle(fontSize: 36)),
             ),
             const SizedBox(height: 10),
           ],

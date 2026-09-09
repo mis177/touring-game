@@ -1,70 +1,61 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_android/image_picker_android.dart';
 import 'package:touring_game/models/note.dart';
-import 'package:touring_game/services/game/bloc/game_bloc.dart';
-import 'package:touring_game/services/game/bloc/game_event.dart';
 import 'package:touring_game/utilities/notes/note.dart';
 
-Widget getNotesWidget(
-    {required DatabaseNote databaseNote,
-    required List<DatabaseNote> notes,
-    required TextEditingController notesTextController,
-    required BuildContext context,
-    required GlobalKey boardKey,
-    required Function refresh}) {
-  DatabaseNote note =
-      notes.where((element) => element.id == databaseNote.id).first;
+Widget getNotesWidget({
+  required DatabaseNote databaseNote,
+  required List<DatabaseNote> notes,
+  required TextEditingController notesTextController,
+  required BuildContext context,
+  required GlobalKey boardKey,
+  required ValueChanged<DatabaseNote> onDelete,
+  required void Function(DatabaseNote previous, DatabaseNote updated) onChanged,
+  required Future<String?> Function() onPickImage,
+}) {
+  DatabaseNote note = notes
+      .where((element) => element.id == databaseNote.id)
+      .first;
+
+  void updateNote(DatabaseNote updatedNote) {
+    final previousNote = note;
+    note = updatedNote;
+    onChanged(previousNote, updatedNote);
+  }
+
   return ActivityNote(
-    notesTextController: notesTextController,
     onRemove: () {
-      refresh(databaseNote);
+      onDelete(databaseNote);
     },
     onEdit: () async {
-      if (note.content is String) {
+      if (!note.isImage) {
         notesTextController.text = note.content;
         await showDialog(
-            context: context,
-            builder: ((context) {
-              return AlertDialog(
-                title: const Text('Your note'),
-                icon: const Icon(Icons.note),
-                content: TextField(
-                  controller: notesTextController,
-                ),
-              );
-            }));
-        note.content = notesTextController.text;
-
+          context: context,
+          builder: ((context) {
+            return AlertDialog(
+              title: const Text('Your note'),
+              icon: const Icon(Icons.note),
+              content: TextField(controller: notesTextController),
+            );
+          }),
+        );
+        updateNote(note.copyWith(content: notesTextController.text));
         notesTextController.clear();
-      } else if (note.content is Image) {
-        final ImagePickerAndroid picker = ImagePickerAndroid();
-        final XFile? image = await picker.getImage(source: ImageSource.gallery);
+      } else {
+        final imagePath = await onPickImage();
 
-        if (image != null) {
-          var oldPath = note.imagePath;
-          note.imagePath = image.path;
-          note.content = Image.file(File(image.path));
-
-          // ignore: use_build_context_synchronously
-          context.read<GameBloc>().add(
-                GameEventDeleteImageFromStorage(imagePath: oldPath!),
-              );
+        if (imagePath != null) {
+          updateNote(note.copyWith(imagePath: imagePath, imageUrl: null));
         }
       }
-      refresh(null);
     },
     containerKey: boardKey,
     onDragEnd: (Offset offset) {
-      note.positionX = offset.dx;
-      note.positionY = offset.dy;
+      updateNote(note.copyWith(positionX: offset.dx, positionY: offset.dy));
     },
     databaseNote: databaseNote,
     onColorChange: (String colorValue) {
-      note.color = colorValue;
+      updateNote(note.copyWith(color: colorValue));
     },
   );
 }

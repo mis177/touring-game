@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:touring_game/models/address.dart';
-import 'package:latlong2/latlong.dart' as lat_lng;
+import 'package:touring_game/models/coordinates.dart';
 
 void main() {
   Map<String, dynamic> jsonData = {
@@ -9,8 +9,10 @@ void main() {
     'lon': '20',
   };
 
-  AddressModel correctAddressModelResult =
-      const AddressModel(name: 'Test address', coords: lat_lng.LatLng(10, 20));
+  const correctAddressModelResult = AddressModel(
+    name: 'Test address',
+    coords: Coordinates(latitude: 10, longitude: 20),
+  );
 
   group('Test initializing AddressModel from Json', () {
     test('Test AddressModel from jsonData function', () {

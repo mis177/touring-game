@@ -1,15 +1,36 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' show immutable;
 
+enum AuthFeedback {
+  verificationEmailSent,
+  passwordResetEmailSent,
+  accountDeleted,
+}
+
 @immutable
-sealed class AuthState {
+sealed class AuthState extends Equatable {
+  const AuthState({
+    this.userEmail,
+    this.isLoading = false,
+    this.loadingText,
+    this.exception,
+    this.feedback,
+  });
+
+  final String? userEmail;
   final bool isLoading;
   final String? loadingText;
-  final String? userMail;
-  const AuthState({
-    this.userMail,
-    this.isLoading = false,
-    this.loadingText = 'Please wait a moment',
-  });
+  final Exception? exception;
+  final AuthFeedback? feedback;
+
+  @override
+  List<Object?> get props => [
+    userEmail,
+    isLoading,
+    loadingText,
+    exception,
+    feedback,
+  ];
 }
 
 class AuthStateUninitialized extends AuthState {
@@ -17,73 +38,51 @@ class AuthStateUninitialized extends AuthState {
 }
 
 class AuthStateFirstTimeOpened extends AuthState {
-  const AuthStateFirstTimeOpened({super.isLoading});
+  const AuthStateFirstTimeOpened();
 }
 
 class AuthStateRegistering extends AuthState {
-  final Exception? exception;
-
   const AuthStateRegistering({
-    this.exception,
     super.isLoading,
-    super.loadingText = null,
+    super.loadingText,
+    super.exception,
   });
 }
 
 class AuthStateLoggingIn extends AuthState {
-  final Exception? exception;
   const AuthStateLoggingIn({
-    this.exception,
     super.isLoading,
-    super.loadingText = null,
+    super.loadingText,
+    super.exception,
+    super.feedback,
   });
 }
 
 class AuthStateLoggedIn extends AuthState {
-  final String userEmail;
-  const AuthStateLoggedIn({required this.userEmail, super.isLoading})
-      : super(userMail: userEmail);
+  const AuthStateLoggedIn({
+    required String userEmail,
+    super.isLoading,
+    super.loadingText,
+    super.exception,
+    super.feedback,
+  }) : super(userEmail: userEmail);
 }
 
 class AuthStateNeedsVerification extends AuthState {
-  const AuthStateNeedsVerification({super.isLoading});
+  const AuthStateNeedsVerification({
+    super.userEmail,
+    super.isLoading,
+    super.loadingText,
+    super.exception,
+    super.feedback,
+  });
 }
 
 class AuthStateForgotPassword extends AuthState {
-  final bool emailSent;
-  final Exception? exception;
   const AuthStateForgotPassword({
-    this.exception,
-    this.emailSent = false,
     super.isLoading,
+    super.loadingText,
+    super.exception,
+    super.feedback,
   });
-}
-
-class AuthStateEmailSent extends AuthState {
-  final Exception? exception;
-  final String userEmail;
-  const AuthStateEmailSent({
-    required this.exception,
-    required this.userEmail,
-  }) : super(userMail: userEmail);
-}
-
-class AuthStateUserDeleting extends AuthState {
-  final Exception? exception;
-  const AuthStateUserDeleting({
-    super.isLoading,
-    this.exception,
-    super.loadingText = null,
-  });
-}
-
-class AuthStateUserDeletedError extends AuthState {
-  final Exception? exception;
-  const AuthStateUserDeletedError({
-    this.exception,
-  });
-}
-
-class AuthStateUserDeleted extends AuthState {
-  const AuthStateUserDeleted();
 }

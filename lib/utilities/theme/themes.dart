@@ -21,13 +21,11 @@ ThemeData darkTheme = ThemeData(
   ),
   popupMenuTheme: PopupMenuThemeData(color: Colors.grey[900]),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.grey[900], selectedItemColor: Colors.amber[800]),
-  inputDecorationTheme: InputDecorationTheme(
-    fillColor: Colors.grey[800],
+    backgroundColor: Colors.grey[900],
+    selectedItemColor: Colors.amber[800],
   ),
-  cardTheme: CardThemeData(
-    color: Colors.grey[800],
-  ),
+  inputDecorationTheme: InputDecorationTheme(fillColor: Colors.grey[800]),
+  cardTheme: CardThemeData(color: Colors.grey[800]),
   floatingActionButtonTheme: FloatingActionButtonThemeData(
     backgroundColor: Colors.green[700],
   ),
@@ -54,13 +52,11 @@ ThemeData lightTheme = ThemeData(
   ),
   popupMenuTheme: PopupMenuThemeData(color: Colors.grey[50]),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.grey[200], selectedItemColor: Colors.amber[800]),
-  inputDecorationTheme: InputDecorationTheme(
-    fillColor: Colors.grey[100],
+    backgroundColor: Colors.grey[200],
+    selectedItemColor: Colors.amber[800],
   ),
-  cardTheme: CardThemeData(
-    color: Colors.grey[100],
-  ),
+  inputDecorationTheme: InputDecorationTheme(fillColor: Colors.grey[100]),
+  cardTheme: CardThemeData(color: Colors.grey[100]),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
     backgroundColor: Colors.green,
   ),

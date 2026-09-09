@@ -1,95 +1,123 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:touring_game/models/activity.dart';
 import 'package:touring_game/models/address.dart';
-import 'package:touring_game/services/game/game_service.dart';
+import 'package:touring_game/models/coordinates.dart';
+import 'package:touring_game/services/game/game_repository.dart';
 import 'package:touring_game/services/map/bloc/map_event.dart';
 import 'package:touring_game/services/map/bloc/map_state.dart';
-import 'package:touring_game/services/map/location_search_repo.dart';
-import 'package:touring_game/utilities/map/current_location.dart';
-import 'package:touring_game/utilities/search_list.dart';
+import 'package:touring_game/services/map/location_repository.dart';
+import 'package:touring_game/services/map/place_search_repository.dart';
+import 'package:touring_game/core/search_filters.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
-  MapBloc(
-      FirebaseCloudGameService service, LocationSearchRepository? repository)
-      : super(const MapStateUninitialized(isLoading: true)) {
-    on<MapEventLoadMap>((event, emit) async {
-      List<DatabaseActivity> activitiesList = [];
+  MapBloc({
+    required CatalogRepository gameRepository,
+    required PlaceSearchRepository searchRepository,
+    required LocationRepository locationRepository,
+  }) : _gameRepository = gameRepository,
+       _searchRepository = searchRepository,
+       _locationRepository = locationRepository,
+       super(const MapStateUninitialized(isLoading: true)) {
+    on<MapEventLoadMap>(_loadMap, transformer: restartable());
+    on<MapEventGetUserLocation>(_getUserLocation, transformer: droppable());
+    on<MapEventSearchAddress>(_searchAddress, transformer: restartable());
+    on<MapEventActivityFilterToggled>(_toggleActivityFilter);
+    on<MapEventAddressResultsCleared>(_clearAddressResults);
+  }
 
-      emit(const MapStateLoadingMap(
-          isLoading: true, loadingText: 'Loading map'));
-      if (service.places.isEmpty) {
-        try {
-          await service.allPlaces();
-        } on Exception catch (e) {
-          emit(MapStateLoadingMap(
-            exception: e,
-          ));
-        }
-      }
+  final CatalogRepository _gameRepository;
+  final PlaceSearchRepository _searchRepository;
+  final LocationRepository _locationRepository;
 
-      activitiesList = service.allActivities;
+  List<DatabaseActivity> _activities = const [];
+  Coordinates? _currentLocation;
+  ActivityStatusFilter? _activityFilter;
 
-      emit(MapStateLoadingMarkers(
-          activities: activitiesList,
-          isLoading: true,
-          loadingText: 'Loading map'));
-
-      Position? currentPosition = await getUserLocation();
-      emit(MapStateLoadedMap(
-        activities: activitiesList,
-        currentLocation: currentPosition,
-        searchResults: const [],
-      ));
-    });
-
-    on<MapEventGetUserLocation>((event, emit) async {
-      Position? currentPosition = await getUserLocation();
-
-      emit(const MapStateGettingUserLocation());
-      emit(MapStateLoadedMap(
-        activities: service.allActivities,
-        currentLocation: currentPosition,
-        searchResults: const [],
-      ));
-    });
-
-    on<MapEventSearchAddress>((event, emit) async {
-      List<AddressModel> addresses = [];
+  Future<void> _loadMap(MapEventLoadMap event, Emitter<MapState> emit) async {
+    emit(const MapStateLoadingMap(isLoading: true, loadingText: 'Loading map'));
+    try {
+      final catalog = await _gameRepository.loadCatalog();
+      _activities = catalog.activities;
+      emit(_loadedMap(isLoading: true, loadingText: 'Loading map'));
       try {
-        addresses = await repository!.fetchAddress(event.searchedText);
-      } on Exception catch (e) {
-        emit(MapStateSearchingAddress(
-          exception: e,
-        ));
+        _currentLocation = await _locationRepository.getCurrentLocation();
+        emit(_loadedMap());
+      } on Exception catch (error) {
+        emit(_loadedMap(exception: error));
       }
+    } on Exception catch (error) {
+      emit(MapStateLoadingMap(exception: error));
+    }
+  }
 
-      emit(MapStateAddressSearchEnded(repo: addresses));
-      emit(MapStateLoadedMap(
-        activities: service.allActivities,
-        currentLocation: null,
-        searchResults: addresses,
-      ));
-    });
+  Future<void> _getUserLocation(
+    MapEventGetUserLocation event,
+    Emitter<MapState> emit,
+  ) async {
+    emit(_loadedMap(isLoading: true, loadingText: 'Getting current location'));
+    try {
+      _currentLocation = await _locationRepository.getCurrentLocation();
+      emit(_loadedMap());
+    } on Exception catch (error) {
+      emit(_loadedMap(exception: error));
+    }
+  }
 
-    on<MapEventSearchActivitiesFinished>((event, emit) {
-      List searchedActivities = service.allActivities;
+  Future<void> _searchAddress(
+    MapEventSearchAddress event,
+    Emitter<MapState> emit,
+  ) async {
+    final query = event.searchedText.trim();
+    if (query.isEmpty) {
+      emit(_loadedMap());
+      return;
+    }
 
-      if (event.value) {
-        searchedActivities = searchWithActivityFinished(
-          list: service.allActivities,
-          finished: event.finished,
-          value: event.value,
-        );
-      }
-      emit(MapStateLoadingMarkers(
-          activities: searchedActivities as List<DatabaseActivity>));
+    emit(_loadedMap(isLoading: true, loadingText: 'Searching address'));
+    try {
+      final addresses = await _searchRepository.search(query);
+      emit(_loadedMap(searchResults: addresses));
+    } on Exception catch (error) {
+      emit(_loadedMap(exception: error));
+    }
+  }
 
-      emit(MapStateLoadedMap(
-        activities: searchedActivities,
-        currentLocation: null,
-        searchResults: const [],
-      ));
-    });
+  void _toggleActivityFilter(
+    MapEventActivityFilterToggled event,
+    Emitter<MapState> emit,
+  ) {
+    _activityFilter = _activityFilter == event.filter ? null : event.filter;
+    emit(_loadedMap());
+  }
+
+  void _clearAddressResults(
+    MapEventAddressResultsCleared event,
+    Emitter<MapState> emit,
+  ) {
+    emit(_loadedMap());
+  }
+
+  MapStateLoadedMap _loadedMap({
+    List<AddressModel> searchResults = const [],
+    bool isLoading = false,
+    String? loadingText,
+    Exception? exception,
+  }) {
+    final filteredActivities = _activityFilter == null
+        ? _activities
+        : searchWithActivityFinished(
+            list: _activities,
+            finished: _activityFilter == ActivityStatusFilter.finished,
+          );
+    return MapStateLoadedMap(
+      activities: List.unmodifiable(filteredActivities),
+      currentLocation: _currentLocation,
+      searchResults: List.unmodifiable(searchResults),
+      activityFilter: _activityFilter,
+      isLoading: isLoading,
+      loadingText: loadingText,
+      exception: exception,
+    );
   }
 }
