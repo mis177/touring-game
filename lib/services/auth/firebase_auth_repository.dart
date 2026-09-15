@@ -3,22 +3,13 @@ import 'package:touring_game/services/auth/auth_exceptions.dart';
 import 'package:touring_game/services/auth/auth_repository.dart';
 import 'package:touring_game/services/auth/auth_user.dart';
 import 'package:touring_game/services/firebase/auth_service.dart';
-import 'package:touring_game/services/firebase/file_storage_service.dart';
 import 'package:touring_game/services/firebase/firebase_service_exception.dart';
-import 'package:touring_game/services/firebase/user_data_service.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
-  const FirebaseAuthRepository({
-    required AuthService authService,
-    required UserDataService userDataService,
-    required FileStorageService storageService,
-  }) : _authService = authService,
-       _userDataService = userDataService,
-       _storageService = storageService;
+  const FirebaseAuthRepository({required AuthService authService})
+    : _authService = authService;
 
   final AuthService _authService;
-  final UserDataService _userDataService;
-  final FileStorageService _storageService;
 
   AuthServiceUser? get _serviceUser {
     try {
@@ -161,8 +152,8 @@ class FirebaseAuthRepository implements AuthRepository {
     }
 
     try {
-      await _userDataService.deleteUserData(user.id);
-      await _storageService.deleteFolder('notes_images/${user.id}');
+      // Successful Auth deletion triggers the configured privileged backend
+      // cleanup. User data must not be removed while the account is active.
       await _authService.deleteCurrentUser();
     } on FirebaseServiceException catch (error) {
       throw _mapAuthError(error);

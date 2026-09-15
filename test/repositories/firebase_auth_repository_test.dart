@@ -13,11 +13,7 @@ void main() {
         code: 'invalid-credential',
         cause: 'invalid credential',
       );
-    final repository = FirebaseAuthRepository(
-      authService: authService,
-      userDataService: FakeUserDataService(),
-      storageService: FakeFileStorageService(),
-    );
+    final repository = FirebaseAuthRepository(authService: authService);
 
     expect(
       () => repository.logIn(email: 'user@example.com', password: 'wrong'),
@@ -31,11 +27,7 @@ void main() {
         code: 'user-not-found',
         cause: 'user not found',
       );
-    final repository = FirebaseAuthRepository(
-      authService: authService,
-      userDataService: FakeUserDataService(),
-      storageService: FakeFileStorageService(),
-    );
+    final repository = FirebaseAuthRepository(authService: authService);
 
     expect(
       () => repository.logIn(email: 'missing@example.com', password: 'wrong'),
@@ -44,7 +36,7 @@ void main() {
   });
 
   test(
-    'deleting an account coordinates data, storage and auth services',
+    'deleting an account deletes authentication before backend cleanup',
     () async {
       final authService = FakeAuthService(
         user: AuthServiceUser(
@@ -54,55 +46,35 @@ void main() {
           lastSignInTime: DateTime.now(),
         ),
       );
-      final userDataService = FakeUserDataService();
-      final storageService = FakeFileStorageService();
-      final repository = FirebaseAuthRepository(
-        authService: authService,
-        userDataService: userDataService,
-        storageService: storageService,
-      );
+      final repository = FirebaseAuthRepository(authService: authService);
 
       await repository.deleteUser();
 
-      expect(userDataService.deletedUserId, 'user-1');
-      expect(storageService.deletedFolders, ['notes_images/user-1']);
       expect(authService.userDeleted, isTrue);
+      expect(authService.currentUser, isNull);
     },
   );
 
-  test(
-    'account deletion can be retried after partial cleanup failure',
-    () async {
-      final authService = FakeAuthService(
-        user: AuthServiceUser(
-          id: 'user-1',
-          email: 'user@example.com',
-          isEmailVerified: true,
-          lastSignInTime: DateTime.now(),
-        ),
-      );
-      final userDataService = FakeUserDataService();
-      final storageService = FakeFileStorageService()
-        ..deleteFolderError = const FirebaseServiceException(
-          code: 'unavailable',
-          cause: 'offline',
-        );
-      final repository = FirebaseAuthRepository(
-        authService: authService,
-        userDataService: userDataService,
-        storageService: storageService,
-      );
+  test('failed authentication deletion keeps the account active', () async {
+    final authService = FakeAuthService(
+      user: AuthServiceUser(
+        id: 'user-1',
+        email: 'user@example.com',
+        isEmailVerified: true,
+        lastSignInTime: DateTime.now(),
+      ),
+    );
+    authService.deleteError = const FirebaseServiceException(
+      code: 'unavailable',
+      cause: 'offline',
+    );
+    final repository = FirebaseAuthRepository(authService: authService);
 
-      await expectLater(
-        repository.deleteUser(),
-        throwsA(isA<GenericAuthException>()),
-      );
-      expect(authService.userDeleted, isFalse);
-
-      storageService.deleteFolderError = null;
-      await repository.deleteUser();
-
-      expect(authService.userDeleted, isTrue);
-    },
-  );
+    await expectLater(
+      repository.deleteUser(),
+      throwsA(isA<GenericAuthException>()),
+    );
+    expect(authService.userDeleted, isFalse);
+    expect(authService.currentUser, isNotNull);
+  });
 }

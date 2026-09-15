@@ -13,7 +13,7 @@ import '../helpers/fake_firebase_services.dart';
 void main() {
   late FakeAuthService authService;
   late FakeGameDataService dataService;
-  late FakeFileStorageService storageService;
+  late FakeNoteImageStorageService imageStorageService;
   late FirebaseGameRepository repository;
 
   setUp(() {
@@ -26,11 +26,11 @@ void main() {
       ),
     );
     dataService = FakeGameDataService();
-    storageService = FakeFileStorageService();
+    imageStorageService = FakeNoteImageStorageService();
     repository = FirebaseGameRepository(
       authService: authService,
       dataService: dataService,
-      storageService: storageService,
+      imageStorageService: imageStorageService,
     );
   });
 
@@ -58,7 +58,7 @@ void main() {
   });
 
   test(
-    'saving an image note coordinates storage and Firestore services',
+    'saving an image note coordinates local storage and Firestore metadata',
     () async {
       final directory = await Directory.systemTemp.createTemp(
         'touring-game-test-',
@@ -79,18 +79,18 @@ void main() {
 
       final savedNote = await repository.saveNote(note);
 
-      final uploadedPath = storageService.uploadedFiles.single.$1;
-      expect(uploadedPath, startsWith('notes_images/user-1/note-1_'));
-      expect(uploadedPath, endsWith('.jpg'));
-      expect(storageService.uploadedFiles.single.$2, image.path);
+      expect(imageStorageService.savedImages.single.userId, 'user-1');
+      expect(imageStorageService.savedImages.single.noteId, 'note-1');
+      expect(imageStorageService.savedImages.single.sourcePath, image.path);
       expect(dataService.savedNoteUserId, 'user-1');
-      expect(dataService.savedNote?.content, uploadedPath.split('/').last);
+      expect(dataService.savedNote?.content, 'local-note-1.jpg');
       expect(dataService.savedNote?.isImage, isTrue);
-      expect(savedNote.imagePath, uploadedPath.split('/').last);
+      expect(savedNote.imagePath, endsWith('local-note-1.jpg'));
+      expect(savedNote.imageUrl, isNull);
     },
   );
 
-  test('failed Firestore save removes the newly uploaded image', () async {
+  test('failed Firestore save removes the newly copied local image', () async {
     final directory = await Directory.systemTemp.createTemp(
       'touring-game-test-',
     );
@@ -114,10 +114,11 @@ void main() {
 
     await expectLater(repository.saveNote(note), throwsA(isA<DataException>()));
 
-    expect(storageService.uploadedFiles, hasLength(1));
-    expect(storageService.deletedFiles, [
-      storageService.uploadedFiles.single.$1,
-    ]);
+    expect(imageStorageService.savedImages, hasLength(1));
+    expect(
+      imageStorageService.deletedImages.single.fileName,
+      'local-note-1.jpg',
+    );
   });
 
   test('failed image replacement keeps the previously stored image', () async {
@@ -149,14 +150,17 @@ void main() {
       throwsA(isA<DataException>()),
     );
 
-    expect(storageService.deletedFiles, hasLength(1));
-    expect(storageService.deletedFiles.single, isNot(endsWith('/old.jpg')));
+    expect(imageStorageService.deletedImages, hasLength(1));
+    expect(
+      imageStorageService.deletedImages.single.fileName,
+      'local-note-1.jpg',
+    );
   });
 
   test(
     'note deletion commits Firestore before best-effort image cleanup',
     () async {
-      storageService.deleteFileError = const FirebaseServiceException(
+      imageStorageService.deleteError = const FirebaseServiceException(
         code: 'unavailable',
         cause: 'offline',
       );
@@ -174,7 +178,29 @@ void main() {
       await repository.deleteNote(note);
 
       expect(dataService.deletedNoteId, note.id);
-      expect(storageService.deletedFiles, ['notes_images/user-1/stored.jpg']);
+      expect(imageStorageService.deletedImages.single.userId, 'user-1');
+      expect(imageStorageService.deletedImages.single.fileName, 'stored.jpg');
     },
   );
+
+  test('loading image notes resolves their device-local paths', () async {
+    dataService.notes = const [
+      GameServiceNote(
+        id: 'note-1',
+        activityId: 'activity-1',
+        content: 'stored.jpg',
+        color: '0xffffeb3b',
+        positionX: 1,
+        positionY: 2,
+        isImage: true,
+      ),
+    ];
+    imageStorageService.resolvedPaths['stored.jpg'] =
+        '${Directory.systemTemp.path}${Platform.pathSeparator}stored.jpg';
+
+    final notes = await repository.loadNotes('activity-1');
+
+    expect(notes.single.imagePath, endsWith('stored.jpg'));
+    expect(notes.single.imageUrl, isNull);
+  });
 }

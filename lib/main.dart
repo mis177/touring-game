@@ -16,15 +16,14 @@ import 'package:touring_game/services/demo/demo_auth_repository.dart';
 import 'package:touring_game/services/demo/demo_game_repository.dart';
 import 'package:touring_game/services/demo/demo_map_repositories.dart';
 import 'package:touring_game/services/firebase/auth_service.dart';
-import 'package:touring_game/services/firebase/file_storage_service.dart';
 import 'package:touring_game/services/firebase/game_data_service.dart';
-import 'package:touring_game/services/firebase/user_data_service.dart';
 import 'package:touring_game/services/game/firebase_game_repository.dart';
 import 'package:touring_game/services/game/game_repository.dart';
 import 'package:touring_game/services/map/location_repository.dart';
 import 'package:touring_game/services/map/location_search_repo.dart';
 import 'package:touring_game/services/map/place_search_repository.dart';
 import 'package:touring_game/services/media/image_picker_repository.dart';
+import 'package:touring_game/services/media/note_image_storage_service.dart';
 import 'package:touring_game/services/navigation/external_url_repository.dart';
 import 'package:touring_game/utilities/loading_screen/loading_screen.dart';
 import 'package:touring_game/utilities/dialogs/auth_dialog.dart';
@@ -60,18 +59,14 @@ void main() {
   }
 
   final authService = FirebaseAuthService();
-  final storageService = FirebaseFileStorageService();
+  final imageStorageService = LocalNoteImageStorageService();
   runApp(
     TouringGameApp(
-      authRepository: FirebaseAuthRepository(
-        authService: authService,
-        userDataService: FirebaseUserDataService(),
-        storageService: storageService,
-      ),
+      authRepository: FirebaseAuthRepository(authService: authService),
       gameRepository: FirebaseGameRepository(
         authService: authService,
         dataService: FirebaseGameDataService(),
-        storageService: storageService,
+        imageStorageService: imageStorageService,
       ),
       searchRepository: LocationSearchRepository(),
       locationRepository: const GeolocatorLocationRepository(),

@@ -34,7 +34,7 @@ is restarted.
   deletion with Firebase Authentication
 - Firestore-backed places, activities, completion state, and personal notes
 - OpenStreetMap map, device location, and rate-limited Nominatim search
-- movable text and image notes with Firebase Storage support
+- movable text notes and device-local image notes
 - persisted light and dark themes
 - explicit loading, empty, validation, offline, and retry states
 - an offline-friendly portfolio demo mode selected at build time
@@ -75,7 +75,8 @@ Notable implementation decisions:
 - ordered mutations use appropriate Bloc concurrency transformers
 - note locations are persisted as normalized coordinates and survive layout
   or orientation changes
-- image replacement uploads uniquely named files and rolls back failed writes
+- image files are copied into durable app-local storage; only their note
+  metadata is stored in Firestore
 - Nominatim requests run only on explicit submission, have a minimum interval,
   and use a bounded in-memory cache
 - embedded web content validates URLs and exposes loading, error, retry, and
@@ -87,13 +88,27 @@ Notable implementation decisions:
 2. Enable Email/Password in Firebase Authentication.
 3. Seed the `places/{placeId}/activities/{activityId}` catalog expected by the
    app.
-4. Review and deploy `firestore.rules` and `storage.rules` for that project.
+4. Review the checked-in Firebase rules and extension configuration.
+5. Deploy them with:
+
+   ```bash
+   firebase deploy --only firestore:rules,extensions --project=YOUR_PROJECT_ID
+   ```
 
 The checked-in rules make the catalog read-only for authenticated users and
-restrict each user's progress, notes, and note images to that user's UID.
-`firebase.json` also contains local Auth, Firestore, and Storage emulator
-configuration. Rules must be tested against the final backend model before a
-real production launch.
+restrict each user's progress and notes to that user's UID. Image files are
+stored only in the application's local documents directory; they are not
+uploaded to Firebase and do not synchronize across devices. Firestore stores
+only image-note metadata, so an image note opened on another device displays an
+unavailable-image placeholder. Uninstalling the app or clearing its data also
+removes the images.
+
+`firebase.json` contains local Auth and Firestore emulator configuration. The
+official Delete User Data extension recursively removes the user's Firestore
+document after Firebase Authentication has successfully deleted the account.
+This extension requires a Firebase project on the Blaze plan. Rules and the
+deletion flow must be tested against the final backend model before a real
+production launch.
 
 ## Quality checks
 

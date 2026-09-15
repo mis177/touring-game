@@ -7,23 +7,23 @@ import 'package:touring_game/models/coordinates.dart';
 import 'package:touring_game/models/note.dart';
 import 'package:touring_game/models/place.dart';
 import 'package:touring_game/services/firebase/auth_service.dart';
-import 'package:touring_game/services/firebase/file_storage_service.dart';
 import 'package:touring_game/services/firebase/firebase_service_exception.dart';
 import 'package:touring_game/services/firebase/game_data_service.dart';
 import 'package:touring_game/services/game/game_repository.dart';
+import 'package:touring_game/services/media/note_image_storage_service.dart';
 
 class FirebaseGameRepository implements GameRepository {
   const FirebaseGameRepository({
     required AuthService authService,
     required GameDataService dataService,
-    required FileStorageService storageService,
+    required NoteImageStorageService imageStorageService,
   }) : _authService = authService,
        _dataService = dataService,
-       _storageService = storageService;
+       _imageStorageService = imageStorageService;
 
   final AuthService _authService;
   final GameDataService _dataService;
-  final FileStorageService _storageService;
+  final NoteImageStorageService _imageStorageService;
 
   String get _userId {
     final user = _authService.currentUser;
@@ -103,12 +103,12 @@ class FirebaseGameRepository implements GameRepository {
     DatabaseNote note, {
     DatabaseNote? previousNote,
   }) async {
-    String? uploadedPath;
+    final userId = _userId;
+    String? savedImageName;
     var dataCommitted = false;
     try {
-      final userId = _userId;
       var storedContent = note.content;
-      String? imageUrl = note.imageUrl;
+      String? localImagePath = note.imagePath;
       if (note.isImage) {
         final imagePath = note.imagePath;
         if (imagePath == null) {
@@ -116,17 +116,22 @@ class FirebaseGameRepository implements GameRepository {
         }
         final localFile = File(imagePath);
         if (await localFile.exists()) {
-          storedContent = _newImageName(note.id, imagePath);
-          uploadedPath = _imagePathFor(userId, storedContent);
-          await _storageService.uploadFile(uploadedPath, imagePath);
-          imageUrl = await _storageService.getDownloadUrl(uploadedPath);
-          if (imageUrl == null) {
-            throw const DataException(
-              'The uploaded note image is not available.',
-            );
-          }
+          savedImageName = await _imageStorageService.saveImage(
+            userId: userId,
+            noteId: note.id,
+            sourcePath: imagePath,
+          );
+          storedContent = savedImageName;
+          localImagePath = await _imageStorageService.findImage(
+            userId: userId,
+            fileName: savedImageName,
+          );
         } else {
           storedContent = path.basename(imagePath);
+          localImagePath = await _imageStorageService.findImage(
+            userId: userId,
+            fileName: storedContent,
+          );
         }
       }
       await _dataService.saveNote(
@@ -142,11 +147,11 @@ class FirebaseGameRepository implements GameRepository {
         ),
       );
       dataCommitted = true;
-      if (uploadedPath != null) {
+      if (savedImageName != null) {
         final previousImage = previousNote?.imagePath;
         if (previousImage != null &&
             path.basename(previousImage) != storedContent) {
-          await _deleteImageBestEffort(userId, previousImage);
+          await _deleteLocalImageBestEffort(userId, previousImage);
         }
       }
       return DatabaseNote(
@@ -157,22 +162,21 @@ class FirebaseGameRepository implements GameRepository {
         positionX: note.positionX,
         positionY: note.positionY,
         isImage: note.isImage,
-        imagePath: note.isImage ? storedContent : null,
-        imageUrl: imageUrl,
+        imagePath: note.isImage ? localImagePath : null,
       );
     } on AppException {
       if (!dataCommitted) {
-        await _rollbackUpload(uploadedPath);
+        await _rollbackLocalImage(savedImageName, userId: userId);
       }
       rethrow;
     } on FirebaseServiceException catch (error) {
       if (!dataCommitted) {
-        await _rollbackUpload(uploadedPath);
+        await _rollbackLocalImage(savedImageName, userId: userId);
       }
       throw DataException('Could not save the note.', error.cause);
     } catch (error) {
       if (!dataCommitted) {
-        await _rollbackUpload(uploadedPath);
+        await _rollbackLocalImage(savedImageName, userId: userId);
       }
       throw DataException('Could not save the note.', error);
     }
@@ -188,9 +192,10 @@ class FirebaseGameRepository implements GameRepository {
       );
       return Future.wait(
         notes.map((note) async {
-          final imageUrl = note.isImage
-              ? await _storageService.getDownloadUrl(
-                  _imagePathFor(userId, note.content),
+          final localImagePath = note.isImage
+              ? await _imageStorageService.findImage(
+                  userId: userId,
+                  fileName: note.content,
                 )
               : null;
           return DatabaseNote(
@@ -201,8 +206,7 @@ class FirebaseGameRepository implements GameRepository {
             positionX: note.positionX,
             positionY: note.positionY,
             isImage: note.isImage,
-            imagePath: note.isImage ? note.content : null,
-            imageUrl: imageUrl,
+            imagePath: localImagePath,
           );
         }),
       );
@@ -221,7 +225,7 @@ class FirebaseGameRepository implements GameRepository {
       final userId = _userId;
       await _dataService.deleteNote(userId: userId, noteId: note.id);
       if (note.isImage && note.imagePath != null) {
-        await _deleteImageBestEffort(userId, note.imagePath!);
+        await _deleteLocalImageBestEffort(userId, note.imagePath!);
       }
     } on AppException {
       rethrow;
@@ -232,30 +236,35 @@ class FirebaseGameRepository implements GameRepository {
     }
   }
 
-  Future<void> _deleteImageBestEffort(String userId, String imagePath) async {
+  Future<void> _deleteLocalImageBestEffort(
+    String userId,
+    String imagePath,
+  ) async {
     try {
-      await _storageService.deleteFile(_imagePathFor(userId, imagePath));
+      await _imageStorageService.deleteImage(
+        userId: userId,
+        fileName: path.basename(imagePath),
+      );
     } on Exception {
-      // The Firestore write is already committed. A stale file is safer than
-      // reverting the visible note to a broken image reference.
+      // The Firestore write is already committed. A stale local file is safer
+      // than reverting the visible note.
     }
   }
 
-  Future<void> _rollbackUpload(String? remotePath) async {
-    if (remotePath == null) {
+  Future<void> _rollbackLocalImage(
+    String? savedImageName, {
+    required String userId,
+  }) async {
+    if (savedImageName == null) {
       return;
     }
     try {
-      await _storageService.deleteFile(remotePath);
+      await _imageStorageService.deleteImage(
+        userId: userId,
+        fileName: savedImageName,
+      );
     } on Exception {
-      // Preserve the original failure; account deletion can clean stale files.
+      // Preserve the original persistence failure.
     }
   }
-
-  String _newImageName(String noteId, String localPath) =>
-      '${noteId}_${DateTime.now().microsecondsSinceEpoch}'
-      '${path.extension(localPath)}';
-
-  String _imagePathFor(String userId, String imagePath) =>
-      'notes_images/$userId/${path.basename(imagePath)}';
 }

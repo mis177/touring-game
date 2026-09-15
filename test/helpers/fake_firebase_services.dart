@@ -1,13 +1,14 @@
+import 'package:path/path.dart' as path;
 import 'package:touring_game/services/firebase/auth_service.dart';
-import 'package:touring_game/services/firebase/file_storage_service.dart';
 import 'package:touring_game/services/firebase/game_data_service.dart';
-import 'package:touring_game/services/firebase/user_data_service.dart';
+import 'package:touring_game/services/media/note_image_storage_service.dart';
 
 class FakeAuthService implements AuthService {
   FakeAuthService({this.user});
 
   AuthServiceUser? user;
   Object? error;
+  Object? deleteError;
   bool initialized = false;
   bool userDeleted = false;
 
@@ -60,61 +61,52 @@ class FakeAuthService implements AuthService {
 
   @override
   Future<void> deleteCurrentUser() async {
+    if (deleteError case final error?) {
+      throw error;
+    }
     userDeleted = true;
+    user = null;
   }
 }
 
-class FakeUserDataService implements UserDataService {
-  String? deletedUserId;
-  Object? error;
+class FakeNoteImageStorageService implements NoteImageStorageService {
+  final List<({String userId, String noteId, String sourcePath})> savedImages =
+      [];
+  final List<({String userId, String fileName})> deletedImages = [];
+  final Map<String, String?> resolvedPaths = {};
+  Object? saveError;
+  Object? deleteError;
 
   @override
-  Future<void> deleteUserData(String userId) async {
-    if (error case final error?) {
+  Future<String> saveImage({
+    required String userId,
+    required String noteId,
+    required String sourcePath,
+  }) async {
+    if (saveError case final error?) {
       throw error;
     }
-    deletedUserId = userId;
-  }
-}
-
-class FakeFileStorageService implements FileStorageService {
-  final List<(String, String)> uploadedFiles = [];
-  final List<String> deletedFiles = [];
-  final List<String> deletedFolders = [];
-  final Map<String, String?> downloadUrls = {};
-  String? defaultDownloadUrl = 'https://example.com/image';
-  Object? uploadError;
-  Object? deleteFileError;
-  Object? deleteFolderError;
-
-  @override
-  Future<void> uploadFile(String remotePath, String localPath) async {
-    if (uploadError case final error?) {
-      throw error;
-    }
-    uploadedFiles.add((remotePath, localPath));
+    savedImages.add((userId: userId, noteId: noteId, sourcePath: sourcePath));
+    return 'local-$noteId${path.extension(sourcePath)}';
   }
 
   @override
-  Future<String?> getDownloadUrl(String remotePath) async =>
-      downloadUrls.containsKey(remotePath)
-      ? downloadUrls[remotePath]
-      : defaultDownloadUrl;
+  Future<String?> findImage({
+    required String userId,
+    required String fileName,
+  }) async => resolvedPaths.containsKey(fileName)
+      ? resolvedPaths[fileName]
+      : path.join('local', userId, fileName);
 
   @override
-  Future<void> deleteFile(String remotePath) async {
-    deletedFiles.add(remotePath);
-    if (deleteFileError case final error?) {
+  Future<void> deleteImage({
+    required String userId,
+    required String fileName,
+  }) async {
+    deletedImages.add((userId: userId, fileName: fileName));
+    if (deleteError case final error?) {
       throw error;
     }
-  }
-
-  @override
-  Future<void> deleteFolder(String remotePath) async {
-    if (deleteFolderError case final error?) {
-      throw error;
-    }
-    deletedFolders.add(remotePath);
   }
 }
 
