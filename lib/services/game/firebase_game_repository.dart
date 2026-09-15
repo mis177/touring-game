@@ -190,7 +190,7 @@ class FirebaseGameRepository implements GameRepository {
         userId: userId,
         activityId: activityId,
       );
-      return Future.wait(
+      return await Future.wait(
         notes.map((note) async {
           final localImagePath = note.isImage
               ? await _imageStorageService.findImage(
