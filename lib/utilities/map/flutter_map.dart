@@ -29,15 +29,16 @@ FlutterMap loadMap({
     children: [
       TileLayer(
         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        userAgentPackageName: 'io.github.mis177.touring_game',
         tileBuilder: darkMode, //darkModeTileBuilder,
-        maxNativeZoom: 20,
+        maxNativeZoom: 19,
         minNativeZoom: 4,
       ),
       RichAttributionWidget(
         animationConfig: const ScaleRAWA(),
         attributions: [
           TextSourceAttribution(
-            'OpenStreetMap contributors',
+            '\u00a9 OpenStreetMap contributors',
             onTap: () =>
                 launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
           ),
