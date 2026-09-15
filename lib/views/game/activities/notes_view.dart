@@ -74,6 +74,10 @@ class _UserNotesState extends State<UserNotes> {
     context.read<NotesBloc>().add(NoteEdited(previousNote, updatedNote));
   }
 
+  void moveNote(DatabaseNote previousNote, DatabaseNote updatedNote) {
+    context.read<NotesBloc>().add(NoteMoved(previousNote, updatedNote));
+  }
+
   Future<String?> pickImage() async {
     try {
       return await context.read<ImagePickerRepository>().pickFromGallery();
@@ -108,6 +112,7 @@ class _UserNotesState extends State<UserNotes> {
               boardKey: boardKey,
               onDelete: deleteNote,
               onChanged: updateNote,
+              onMoved: moveNote,
               onPickImage: pickImage,
             ),
           );

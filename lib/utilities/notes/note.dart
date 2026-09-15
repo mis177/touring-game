@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:touring_game/models/note.dart';
 import 'package:touring_game/utilities/notes/note_position.dart';
 
+enum _NoteMenuAction { color, edit, delete }
+
 class ActivityNote extends StatefulWidget {
   const ActivityNote({
     super.key,
@@ -27,15 +29,16 @@ class ActivityNote extends StatefulWidget {
 }
 
 class _ActivityNoteState extends State<ActivityNote> {
+  final _menuKey = GlobalKey<PopupMenuButtonState<_NoteMenuAction>>();
   Offset position = const Offset(0, 0);
   Offset normalizedPosition = const Offset(0, 0);
   Offset? legacyGlobalPosition;
-  late Color noteColor;
 
   void _changeColor(Color color) {
-    setState(() => noteColor = color);
     widget.onColorChange(color.toARGB32().toString());
   }
+
+  Color get noteColor => Color(int.parse(widget.databaseNote.color));
 
   Widget _buildContents() {
     if (!widget.databaseNote.isImage) {
@@ -59,11 +62,28 @@ class _ActivityNoteState extends State<ActivityNote> {
   @override
   void initState() {
     super.initState();
-    noteColor = Color(int.parse(widget.databaseNote.color));
+    _readStoredPosition();
+  }
+
+  @override
+  void didUpdateWidget(covariant ActivityNote oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldNote = oldWidget.databaseNote;
+    final note = widget.databaseNote;
+    if (oldNote.positionX != note.positionX ||
+        oldNote.positionY != note.positionY) {
+      _readStoredPosition();
+      _schedulePositionUpdate();
+    }
+  }
+
+  void _readStoredPosition() {
     final x = widget.databaseNote.positionX;
     final y = widget.databaseNote.positionY;
     final isNew = x == -999 && y == -999;
     final isNormalized = x >= 0 && x <= 1 && y >= 0 && y <= 1;
+    normalizedPosition = const Offset(0, 0);
+    legacyGlobalPosition = null;
     if (!isNew && isNormalized) {
       normalizedPosition = Offset(x, y);
     } else if (!isNew) {
@@ -125,16 +145,69 @@ class _ActivityNoteState extends State<ActivityNote> {
     );
     final local = renderObject.globalToLocal(details.offset);
     final availableSize = Size(maxX.toDouble(), maxY.toDouble());
-    normalizedPosition = normalizeNotePosition(
+    final updatedPosition = normalizeNotePosition(
       localPosition: local,
       availableSize: availableSize,
     );
-    final clampedPosition = resolveNotePosition(
-      normalizedPosition: normalizedPosition,
-      availableSize: availableSize,
+    widget.onDragEnd(updatedPosition);
+  }
+
+  RelativeRect? _colorMenuPosition() {
+    final overlay = Overlay.of(context).context.findRenderObject();
+    final button = _menuKey.currentContext?.findRenderObject();
+    if (overlay is! RenderBox || button is! RenderBox) {
+      return null;
+    }
+    final buttonTopLeft = overlay.globalToLocal(
+      button.localToGlobal(Offset.zero),
     );
-    setState(() => position = clampedPosition);
-    widget.onDragEnd(normalizedPosition);
+    return RelativeRect.fromRect(
+      Rect.fromLTWH(
+        buttonTopLeft.dx,
+        buttonTopLeft.dy + button.size.height,
+        button.size.width,
+        0,
+      ),
+      Offset.zero & overlay.size,
+    );
+  }
+
+  Future<void> _handleMenuAction(_NoteMenuAction action) async {
+    switch (action) {
+      case _NoteMenuAction.color:
+        final menuPosition = _colorMenuPosition();
+        if (menuPosition == null) {
+          return;
+        }
+        final color = await showMenu<Color>(
+          context: context,
+          position: menuPosition,
+          items: [
+            _colorMenuItem(Colors.green),
+            _colorMenuItem(Colors.yellow),
+            _colorMenuItem(Colors.blue),
+            _colorMenuItem(Colors.pink),
+            _colorMenuItem(Colors.orange),
+            _colorMenuItem(Colors.cyan[50]!),
+          ],
+        );
+        if (mounted && color != null) {
+          _changeColor(color);
+        }
+      case _NoteMenuAction.edit:
+        widget.onEdit();
+      case _NoteMenuAction.delete:
+        widget.onRemove();
+    }
+  }
+
+  void _showNoteMenu() => _menuKey.currentState?.showButtonMenu();
+
+  PopupMenuItem<Color> _colorMenuItem(Color color) {
+    return PopupMenuItem(
+      value: color,
+      child: Container(height: kMinInteractiveDimension, color: color),
+    );
   }
 
   @override
@@ -169,12 +242,6 @@ class _ActivityNoteState extends State<ActivityNote> {
             Padding(
               padding: const EdgeInsets.only(top: 17.0),
               child: GestureDetector(
-                child: Container(
-                  height: MediaQuery.of(context).size.width / 3,
-                  width: MediaQuery.of(context).size.width / 3,
-                  color: noteColor,
-                  child: Center(child: contents),
-                ),
                 onTap: () async {
                   await showDialog(
                     context: context,
@@ -194,104 +261,41 @@ class _ActivityNoteState extends State<ActivityNote> {
                     }),
                   );
                 },
-                onLongPress: () async {
-                  await showMenu(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      position.dx + MediaQuery.of(context).size.width / 3,
-                      position.dy,
-                      position.dx + MediaQuery.of(context).size.width / 3,
-                      0,
-                    ),
-                    items: [
-                      PopupMenuItem(
-                        child: const Text('Color'),
-                        onTap: () async {
-                          await showMenu(
-                            context: context,
-                            position: RelativeRect.fromLTRB(
-                              position.dx +
-                                  MediaQuery.of(context).size.width / 3,
-                              position.dy,
-                              position.dx +
-                                  MediaQuery.of(context).size.width / 3,
-                              0,
-                            ),
-                            items: [
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.green,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.green);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.yellow,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.yellow);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.blue,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.blue);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.pink,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.pink);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.orange,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.orange);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: Container(
-                                  height: kMinInteractiveDimension,
-                                  color: Colors.cyan[50]!,
-                                ),
-                                onTap: () {
-                                  _changeColor(Colors.cyan[50]!);
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      PopupMenuItem(
-                        child: const Text('Edit'),
-                        onTap: () {
-                          widget.onEdit();
-                        },
-                      ),
-                      PopupMenuItem(
-                        onTap: widget.onRemove,
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  );
-                },
+                onLongPress: _showNoteMenu,
+                child: Container(
+                  height: MediaQuery.of(context).size.width / 3,
+                  width: MediaQuery.of(context).size.width / 3,
+                  color: noteColor,
+                  child: Center(child: contents),
+                ),
               ),
             ),
             const Icon(Icons.push_pin),
+            Positioned(
+              top: 17,
+              right: 0,
+              child: PopupMenuButton<_NoteMenuAction>(
+                key: _menuKey,
+                position: PopupMenuPosition.under,
+                tooltip: 'Note actions',
+                onSelected: _handleMenuAction,
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: _NoteMenuAction.color,
+                    child: Text('Color'),
+                  ),
+                  PopupMenuItem(
+                    value: _NoteMenuAction.edit,
+                    child: Text('Edit'),
+                  ),
+                  PopupMenuItem(
+                    value: _NoteMenuAction.delete,
+                    child: Text('Delete'),
+                  ),
+                ],
+                icon: const Icon(Icons.more_vert),
+              ),
+            ),
           ],
         ),
       ),

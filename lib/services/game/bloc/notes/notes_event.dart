@@ -36,6 +36,16 @@ final class NoteEdited extends NotesEvent {
   List<Object?> get props => [previousNote, note];
 }
 
+final class NoteMoved extends NotesEvent {
+  const NoteMoved(this.previousNote, this.note);
+
+  final DatabaseNote previousNote;
+  final DatabaseNote note;
+
+  @override
+  List<Object?> get props => [previousNote, note];
+}
+
 final class NoteDeleted extends NotesEvent {
   const NoteDeleted(this.note);
 

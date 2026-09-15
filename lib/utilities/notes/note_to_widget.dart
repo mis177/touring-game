@@ -10,6 +10,7 @@ Widget getNotesWidget({
   required GlobalKey boardKey,
   required ValueChanged<DatabaseNote> onDelete,
   required void Function(DatabaseNote previous, DatabaseNote updated) onChanged,
+  void Function(DatabaseNote previous, DatabaseNote updated)? onMoved,
   required Future<String?> Function() onPickImage,
 }) {
   DatabaseNote note = notes
@@ -23,6 +24,7 @@ Widget getNotesWidget({
   }
 
   return ActivityNote(
+    key: ValueKey(databaseNote.id),
     onRemove: () {
       onDelete(databaseNote);
     },
@@ -51,7 +53,9 @@ Widget getNotesWidget({
     },
     containerKey: boardKey,
     onDragEnd: (Offset offset) {
-      updateNote(note.copyWith(positionX: offset.dx, positionY: offset.dy));
+      final previousNote = note;
+      note = note.copyWith(positionX: offset.dx, positionY: offset.dy);
+      (onMoved ?? onChanged)(previousNote, note);
     },
     databaseNote: databaseNote,
     onColorChange: (String colorValue) {

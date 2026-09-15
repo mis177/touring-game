@@ -55,4 +55,46 @@ void main() {
 
     await bloc.close();
   });
+
+  test('moving a note persists optimistically without loading state', () async {
+    final repository = FakeGameRepository(
+      notes: const [note],
+      controlledSaves: true,
+    );
+    final bloc = NotesBloc(repository);
+    final moved = note.copyWith(positionX: 0.5, positionY: 0.75);
+
+    bloc.add(const NotesLoadRequested('activity'));
+    await bloc.stream.firstWhere((state) => state.notes.isNotEmpty);
+    bloc.add(NoteMoved(note, moved));
+    final optimisticState = await bloc.stream.firstWhere(
+      (state) => state.notes.single == moved,
+    );
+
+    expect(optimisticState.isLoading, isFalse);
+    expect(repository.savedNotes, [moved]);
+
+    repository.saveCompleters.single.complete();
+    await bloc.close();
+  });
+
+  test('failed note move rolls back its optimistic position', () async {
+    final failure = Exception('save failed');
+    final bloc = NotesBloc(
+      FakeGameRepository(notes: const [note], saveError: failure),
+    );
+    final moved = note.copyWith(positionX: 0.5, positionY: 0.75);
+
+    bloc.add(const NotesLoadRequested('activity'));
+    await bloc.stream.firstWhere((state) => state.notes.isNotEmpty);
+    bloc.add(NoteMoved(note, moved));
+    final failureState = await bloc.stream.firstWhere(
+      (state) => state.exception != null,
+    );
+
+    expect(failureState.isLoading, isFalse);
+    expect(failureState.notes, const [note]);
+    expect(failureState.exception, same(failure));
+    await bloc.close();
+  });
 }
